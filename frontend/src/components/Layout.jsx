@@ -12,7 +12,7 @@ const menuItems = [
   { text: 'Procurement & Waste', icon: <LocalShipping />, path: '/procurement' },
   { text: 'Product Quality', icon: <QualityIcon />, path: '/product-quality' },
   { text: 'Engineering & BoM', icon: <Schema />, path: '/engineering' },
-  { text: 'IoT Equipment', icon: <PrecisionManufacturing />, path: '/equipment' },
+  { text: 'IoT Equipment', icon: <LogoIcon />, path: '/equipment' },
   { text: 'Reports & Analytics', icon: <ReportIcon />, path: '/reports' },
   { text: 'YUZU Diagnostics', icon: <Terminal />, path: '/diagnostics' },
   { text: 'Launch Kiosk Mode', icon: <TouchApp />, path: '/kiosk' },

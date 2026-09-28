@@ -45,7 +45,6 @@ class ManualBOMRequest(BaseModel):
 
 @router.get("/boms", response_model=List[BOMSchema])
 def read_boms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # Mock data injection if empty for demo purposes
     if db.query(models.BillOfMaterial).count() == 0:
         db.add(models.BillOfMaterial(product_name="V8 Engine Block", components=json.dumps({"Aluminum (kg)": 150, "Steel Bolts (units)": 45}), total_cost=2450.00))
         db.commit()
@@ -53,7 +52,6 @@ def read_boms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @router.get("/invoices", response_model=List[InvoiceSchema])
 def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # Mock data injection if empty for demo purposes
     if db.query(models.Invoice).count() == 0:
         db.add(models.Invoice(client_name="Tata Motors", amount=150000.00, status="Paid", sow_reference="SOW-TM-2026-A1"))
         db.add(models.Invoice(client_name="Mahindra Aerospace", amount=85000.00, status="Unpaid", sow_reference="SOW-MA-2026-B9"))

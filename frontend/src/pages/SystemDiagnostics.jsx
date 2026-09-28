@@ -17,7 +17,8 @@ export default function SystemDiagnostics() {
       });
       const data = await res.json();
       setResponse(data.insight);
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       setResponse("System Error: Couldn't connect to YUZU's core.");
     }
     setLoading(false);

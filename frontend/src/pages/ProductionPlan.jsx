@@ -21,7 +21,8 @@ export default function ProductionPlan() {
       });
       const data = await response.json();
       setAiInsight(data.insight);
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       setAiInsight("Failed to load insights. Make sure the backend is running.");
     }
     setInsightLoading(false);

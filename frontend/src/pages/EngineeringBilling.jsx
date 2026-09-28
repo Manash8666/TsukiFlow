@@ -30,7 +30,8 @@ export default function EngineeringBilling() {
       await generateAIBOM({ product_name: productName }).unwrap();
       setAiPromptOpen(false);
       setProductName('');
-    } catch (e) {
+    } catch (err) {
+      console.error(err);
       alert("Failed to generate BoM via YUZU.");
     }
   };
@@ -44,7 +45,8 @@ export default function EngineeringBilling() {
       }).unwrap();
       setManualBOMOpen(false);
       setManualProduct('');
-    } catch (e) {
+    } catch (err) {
+      console.error(err);
       alert("Failed to save Manual BoM. Check JSON formatting.");
     }
   };

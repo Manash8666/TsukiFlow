@@ -37,7 +37,6 @@ def read_waste(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @router.post("/pos/mock")
 def create_mock_po(db: Session = Depends(get_db)):
-    # Helper to quickly seed a PO
     po = models.PurchaseOrder(po_number="PO-2026-089", vendor_name="Tata Steel", material="Raw Aluminum", quantity=5000, status="Issued")
     db.add(po)
     db.commit()

@@ -1,5 +1,5 @@
 import { Typography, Box, Card, CardContent, Grid, Button, CircularProgress, Chip } from '@mui/material';
-import { Memory as MemoryIcon, Thermostat, VpnKey, Build } from '@mui/icons-material';
+import { Memory as MemoryIcon, Thermostat, Build } from '@mui/icons-material';
 import { useGetMachinesQuery } from '../store/apiSlice';
 import { useState } from 'react';
 

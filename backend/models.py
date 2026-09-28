@@ -114,7 +114,7 @@ class BillOfMaterial(Base):
     __tablename__ = "boms"
     id = Column(Integer, primary_key=True, index=True)
     product_name = Column(String(100))
-    components = Column(Text) # Stored as JSON string
+    components = Column(Text) 
     total_cost = Column(Float)
 
 class Invoice(Base):
@@ -129,4 +129,4 @@ class CustomWorkflow(Base):
     __tablename__ = "custom_workflows"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100))
-    stages = Column(Text) # Stored as JSON string array
+    stages = Column(Text) 

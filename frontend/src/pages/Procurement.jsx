@@ -1,5 +1,5 @@
-import { Typography, Box, Card, CardContent, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from '@mui/material';
-import { Description, LocalShipping, Recycling, PostAdd, ReceiptLong } from '@mui/icons-material';
+import { Typography, Box, Card, CardContent, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
+import { Description, Recycling, PostAdd, ReceiptLong } from '@mui/icons-material';
 import { useGetPOsQuery, useGetWasteLogsQuery } from '../store/apiSlice';
 
 export default function ProcurementWaste() {

@@ -32,9 +32,9 @@ export default function InventoryLevels() {
       {error && <Typography color="error">Error loading inventory data</Typography>}
 
       <Grid container spacing={3}>
-        {inventory && inventory.map((item, idx) => {
+        {inventory && inventory.map((item) => {
           const { status, color } = getStatusInfo(item.inventory_level);
-          const capacity = 1000; // Mocked capacity
+          const capacity = 1000; // Expected max capacity per storage bin
           const percentage = Math.round((item.inventory_level / capacity) * 100);
           
           return (
