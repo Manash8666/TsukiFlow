@@ -11,11 +11,13 @@ import EquipmentHealth from './pages/EquipmentHealth';
 import ReportsAnalytics from './pages/ReportsAnalytics';
 import SystemDiagnostics from './pages/SystemDiagnostics';
 import WorkerKiosk from './pages/WorkerKiosk';
+import Login from './pages/Login';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/*" element={
           <ProtectedRoute>
             <Layout>

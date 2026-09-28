@@ -28,8 +28,8 @@ export default function Layout({ children }) {
   const drawer = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar sx={{ my: 2, display: 'flex', alignItems: 'center', gap: 1.5, px: 3 }}>
-        <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.5)' }}>
-          <LogoIcon sx={{ color: '#fff' }} />
+        <Box sx={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src="/tsukiflow-logo.jpg" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: 8, objectFit: 'cover' }} />
         </Box>
         <Typography variant="h5" component="div" sx={{ fontWeight: 800, letterSpacing: 1, color: '#f8fafc' }}>
           TsukiFlow
