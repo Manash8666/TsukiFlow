@@ -38,6 +38,11 @@ class WorkflowSchema(BaseModel):
 class GenerateBOMRequest(BaseModel):
     product_name: str
 
+class ManualBOMRequest(BaseModel):
+    product_name: str
+    components: str
+    total_cost: float
+
 @router.get("/boms", response_model=List[BOMSchema])
 def read_boms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     # Mock data injection if empty for demo purposes
@@ -108,3 +113,14 @@ async def generate_ai_bom(request: GenerateBOMRequest, db: Session = Depends(get
             return new_bom
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/boms/manual", response_model=BOMSchema)
+def create_manual_bom(request: ManualBOMRequest, db: Session = Depends(get_db)):
+    new_bom = models.BillOfMaterial(
+        product_name=request.product_name,
+        components=request.components,
+        total_cost=request.total_cost
+    )
+    db.add(new_bom)
+    db.commit()
+    return new_bom

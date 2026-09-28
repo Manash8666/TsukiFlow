@@ -1,11 +1,12 @@
-import { Typography, Box, Card, CardContent, Grid, LinearProgress, Button, Chip, IconButton, CircularProgress } from '@mui/material';
-import { AddShoppingCart, WarningAmber, MoreVert } from '@mui/icons-material';
-import { useGetInventoryQuery, useAddInventoryMutation } from '../store/apiSlice';
+import { Typography, Box, Card, CardContent, Grid, LinearProgress, Button, Chip, IconButton, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { AddShoppingCart, WarningAmber, MoreVert, QrCode } from '@mui/icons-material';
+import { useGetInventoryQuery, useAddInventoryMutation, useGetSKUsQuery } from '../store/apiSlice';
 import InventoryForm from '../components/forms/InventoryForm';
 import { useState } from 'react';
 
 export default function InventoryLevels() {
   const { data: inventory, isLoading, error } = useGetInventoryQuery();
+  const { data: skus = [] } = useGetSKUsQuery();
   const [addInventory] = useAddInventoryMutation();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -69,6 +70,51 @@ export default function InventoryLevels() {
           )
         })}
       </Grid>
+
+      {/* SKU & Finished Goods Management */}
+      <Box sx={{ mt: 5 }}>
+        <Card className="hover-lift" sx={{ border: '1px solid rgba(255,255,255,0.05)', bgcolor: 'rgba(30, 41, 59, 0.8)' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <QrCode color="secondary" /> SKU & Product Variants Directory
+              </Typography>
+              <Button variant="outlined" color="secondary" size="small">Add SKU</Button>
+            </Box>
+            
+            <TableContainer component={Box} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>SKU Code</TableCell>
+                    <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Product Name</TableCell>
+                    <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Variant Details</TableCell>
+                    <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Unit Price</TableCell>
+                    <TableCell align="right" sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Finished Goods Stock</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {skus.map((sku) => (
+                    <TableRow key={sku.id} sx={{ '&:last-child td': { border: 0 } }}>
+                      <TableCell sx={{ color: 'text.primary', borderBottom: '1px solid rgba(255,255,255,0.05)', fontWeight: 'bold' }}>
+                        <Chip label={sku.sku_code} size="small" variant="outlined" color="secondary" />
+                      </TableCell>
+                      <TableCell sx={{ color: 'text.primary', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{sku.product_name}</TableCell>
+                      <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{sku.variant}</TableCell>
+                      <TableCell sx={{ color: 'primary.light', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        ${sku.unit_price.toFixed(2)}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: 'text.primary', borderBottom: '1px solid rgba(255,255,255,0.05)', fontWeight: 'bold' }}>
+                        {sku.stock_quantity.toLocaleString()} units
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      </Box>
       
       <InventoryForm 
         open={isFormOpen} 

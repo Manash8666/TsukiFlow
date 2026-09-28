@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Typography, Box, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, Stepper, Step, StepLabel, TextField, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
-import { AccountTree, Receipt, Schema, AssignmentTurnedIn, AutoFixHigh, Edit } from '@mui/icons-material';
-import { useGetBOMsQuery, useGetInvoicesQuery, useGetWorkflowsQuery, useUpdateWorkflowMutation, useGenerateAIBOMMutation } from '../store/apiSlice';
+import { AccountTree, Receipt, Schema, AssignmentTurnedIn, AutoFixHigh, Edit, AddBox } from '@mui/icons-material';
+import { useGetBOMsQuery, useGetInvoicesQuery, useGetWorkflowsQuery, useUpdateWorkflowMutation, useGenerateAIBOMMutation, useCreateManualBOMMutation } from '../store/apiSlice';
 
 export default function EngineeringBilling() {
   const { data: boms = [] } = useGetBOMsQuery();
@@ -9,10 +9,16 @@ export default function EngineeringBilling() {
   const { data: workflows = [] } = useGetWorkflowsQuery();
   const [updateWorkflow] = useUpdateWorkflowMutation();
   const [generateAIBOM, { isLoading: isGenerating }] = useGenerateAIBOMMutation();
+  const [createManualBOM] = useCreateManualBOMMutation();
 
   const [aiPromptOpen, setAiPromptOpen] = useState(false);
   const [productName, setProductName] = useState('');
   
+  const [manualBOMOpen, setManualBOMOpen] = useState(false);
+  const [manualProduct, setManualProduct] = useState('');
+  const [manualComponents, setManualComponents] = useState('{"Fabric (m)": 2, "Buttons": 5}');
+  const [manualCost, setManualCost] = useState('');
+
   const [workflowEditOpen, setWorkflowEditOpen] = useState(false);
   const [workflowStages, setWorkflowStages] = useState('');
 
@@ -26,6 +32,20 @@ export default function EngineeringBilling() {
       setProductName('');
     } catch (e) {
       alert("Failed to generate BoM via YUZU.");
+    }
+  };
+
+  const handleManualBoM = async () => {
+    try {
+      await createManualBOM({ 
+        product_name: manualProduct, 
+        components: manualComponents, 
+        total_cost: parseFloat(manualCost) || 0 
+      }).unwrap();
+      setManualBOMOpen(false);
+      setManualProduct('');
+    } catch (e) {
+      alert("Failed to save Manual BoM. Check JSON formatting.");
     }
   };
 
@@ -83,9 +103,14 @@ export default function EngineeringBilling() {
                 <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <AccountTree color="primary" /> Bill of Materials (BoM)
                 </Typography>
-                <Button variant="contained" size="small" color="primary" startIcon={<AutoFixHigh />} onClick={() => setAiPromptOpen(true)}>
-                  Generate BoM (YUZU AI)
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button variant="outlined" size="small" color="primary" startIcon={<AddBox />} onClick={() => setManualBOMOpen(true)}>
+                    Manual Entry
+                  </Button>
+                  <Button variant="contained" size="small" color="primary" startIcon={<AutoFixHigh />} onClick={() => setAiPromptOpen(true)}>
+                    YUZU AI
+                  </Button>
+                </Box>
               </Box>
               
               <TableContainer component={Box} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
@@ -186,6 +211,23 @@ export default function EngineeringBilling() {
           >
             {isGenerating ? 'YUZU is Mapping...' : 'Generate AI BoM'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Manual BoM Dialog */}
+      <Dialog open={manualBOMOpen} onClose={() => setManualBOMOpen(false)} PaperProps={{ sx: { bgcolor: 'background.paper', backgroundImage: 'none', width: '100%', maxWidth: 500 } }}>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Manual BoM Entry</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Upload or define your proprietary Bill of Materials.
+          </Typography>
+          <TextField fullWidth label="Product Name" sx={{ mb: 2, mt: 1 }} value={manualProduct} onChange={(e) => setManualProduct(e.target.value)} />
+          <TextField fullWidth multiline rows={3} label="Components (JSON format)" sx={{ mb: 2 }} value={manualComponents} onChange={(e) => setManualComponents(e.target.value)} />
+          <TextField fullWidth label="Total Cost ($)" type="number" value={manualCost} onChange={(e) => setManualCost(e.target.value)} />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setManualBOMOpen(false)}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleManualBoM}>Save Proprietary BoM</Button>
         </DialogActions>
       </Dialog>
 

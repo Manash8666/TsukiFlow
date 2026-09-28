@@ -81,6 +81,26 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Engineering'],
     }),
+    createManualBOM: builder.mutation({
+      query: (bom) => ({
+        url: '/engineering/boms/manual',
+        method: 'POST',
+        body: bom,
+      }),
+      invalidatesTags: ['Engineering'],
+    }),
+    getSKUs: builder.query({
+      query: () => '/inventory/skus',
+      providesTags: ['Inventory'],
+    }),
+    addSKU: builder.mutation({
+      query: (sku) => ({
+        url: '/inventory/skus',
+        method: 'POST',
+        body: sku,
+      }),
+      invalidatesTags: ['Inventory'],
+    }),
   }),
 });
 
@@ -98,5 +118,8 @@ export const {
   useGetInvoicesQuery,
   useGetWorkflowsQuery,
   useUpdateWorkflowMutation,
-  useGenerateAIBOMMutation
+  useGenerateAIBOMMutation,
+  useCreateManualBOMMutation,
+  useGetSKUsQuery,
+  useAddSKUMutation
 } = apiSlice;

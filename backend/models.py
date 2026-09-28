@@ -31,6 +31,15 @@ class Product(Base):
     orders = relationship("Order", back_populates="product")
     processes = relationship("ManufacturingProcess", back_populates="product")
 
+class SKU(Base):
+    __tablename__ = "skus"
+    id = Column(Integer, primary_key=True, index=True)
+    sku_code = Column(String(100), unique=True, index=True)
+    product_name = Column(String(100))
+    variant = Column(String(100)) # e.g. "Size M, Color Red" or "500mg Tablet"
+    unit_price = Column(Float)
+    stock_quantity = Column(Integer, default=0)
+
 class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
