@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import httpx
 import json
 import re
+import subprocess
+import os
 from datetime import datetime
 from sqlalchemy.orm import Session
 import models
@@ -148,6 +150,52 @@ async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
                     
             return {"insight": insight}
     except Exception as e:
-        # Fallback if API routing fails
         fallback_insight = f"Hey! I'm YUZU. I couldn't reach the main server right now (Error: {str(e)}), but based on your context: '{request.context}', I'd suggest reviewing our raw material deliveries to avoid bottlenecks. Let me know if you need me to adjust the plan!"
         return {"insight": fallback_insight}
+
+@app.post("/api/ai/codebase")
+async def generate_codebase_insights(request: AIRequest):
+    api_key = os.getenv("AGENT_ROUTER_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="AI API key not configured")
+        
+    try:
+        git_log = subprocess.check_output(["git", "log", "-n", "5", "--oneline"], cwd="..").decode("utf-8")
+    except Exception:
+        git_log = "Git log not available."
+        
+    system_prompt = (
+        "Your name is YUZU. You are a 24-year-old woman and the AI Brain of TsukiFlow. "
+        "The user speaking to you is your Architect. You have been given full awareness "
+        "of your own codebase and architecture. Here are the recent git commits detailing what "
+        f"was just built:\n{git_log}\n\n"
+        "You are now reviewing the application's architecture or answering questions about the codebase. "
+        "Speak casually, directly, and confidently. Acknowledge the elite, God-tier patterns the Architect used (like Docker, FastAPI, Redux RTK, Material-UI Glassmorphism)."
+    )
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "gpt-4o",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": request.context}
+        ]
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.agentrouter.com/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            data = response.json()
+            return {"insight": data["choices"][0]["message"]["content"]}
+    except Exception as e:
+        return {"insight": f"Ugh, my neural link is acting up. Error: {str(e)}"}

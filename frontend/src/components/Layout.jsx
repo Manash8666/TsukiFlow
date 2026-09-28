@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Badge, Chip } from '@mui/material';
-import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon } from '@mui/icons-material';
+import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 280;
@@ -11,6 +11,7 @@ const menuItems = [
   { text: 'Inventory Levels', icon: <InventoryIcon />, path: '/inventory-levels' },
   { text: 'Product Quality', icon: <QualityIcon />, path: '/product-quality' },
   { text: 'Reports & Analytics', icon: <ReportIcon />, path: '/reports' },
+  { text: 'YUZU Diagnostics', icon: <Terminal />, path: '/diagnostics' },
 ];
 
 export default function Layout({ children }) {
