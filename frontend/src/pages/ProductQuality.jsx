@@ -1,5 +1,5 @@
 import { Typography, Box, Card, CardContent, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress } from '@mui/material';
-import { Build, AssignmentTurnedIn, CheckCircleOutline, CancelOutlined } from '@mui/icons-material';
+import { Build, AssignmentTurnedIn, CheckCircleOutlined, CancelOutlined } from '@mui/icons-material';
 import { useGetTasksQuery, useAddTaskMutation } from '../store/apiSlice';
 import TaskForm from '../components/forms/TaskForm';
 import { useState } from 'react';
@@ -26,7 +26,7 @@ export default function ProductQuality() {
           <Card className="hover-lift" sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <CheckCircleOutline color="success" fontSize="large" />
+                <CheckCircleOutlined color="success" fontSize="large" />
                 <Box>
                   <Typography variant="h4" fontWeight="bold" color="success.main">94.2%</Typography>
                   <Typography variant="body2" color="text.secondary">Overall Pass Rate</Typography>
