@@ -21,11 +21,34 @@ export const apiSlice = createApi({
       query: () => '/inventory',
       providesTags: ['Inventory'],
     }),
+    addInventory: builder.mutation({
+      query: (newItem) => ({
+        url: '/inventory',
+        method: 'POST',
+        body: newItem,
+      }),
+      invalidatesTags: ['Inventory'],
+    }),
     getTasks: builder.query({
       query: () => '/tasks',
       providesTags: ['Task'],
     }),
+    addTask: builder.mutation({
+      query: (newTask) => ({
+        url: '/tasks',
+        method: 'POST',
+        body: newTask,
+      }),
+      invalidatesTags: ['Task'],
+    }),
   }),
 });
 
-export const { useGetPlansQuery, useAddPlanMutation, useGetInventoryQuery, useGetTasksQuery } = apiSlice;
+export const { 
+  useGetPlansQuery, 
+  useAddPlanMutation, 
+  useGetInventoryQuery, 
+  useAddInventoryMutation,
+  useGetTasksQuery,
+  useAddTaskMutation
+} = apiSlice;

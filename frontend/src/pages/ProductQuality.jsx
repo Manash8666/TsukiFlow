@@ -1,9 +1,13 @@
 import { Typography, Box, Card, CardContent, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress } from '@mui/material';
 import { Build, AssignmentTurnedIn, CheckCircleOutline, CancelOutlined } from '@mui/icons-material';
-import { useGetTasksQuery } from '../store/apiSlice';
+import { useGetTasksQuery, useAddTaskMutation } from '../store/apiSlice';
+import TaskForm from '../components/forms/TaskForm';
+import { useState } from 'react';
 
 export default function ProductQuality() {
   const { data: tasks, isLoading, error } = useGetTasksQuery();
+  const [addTask] = useAddTaskMutation();
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   return (
     <Box>
@@ -12,7 +16,9 @@ export default function ProductQuality() {
           <Typography variant="h4" fontWeight="bold" gutterBottom>Product Quality</Typography>
           <Typography variant="body1" color="text.secondary">Live tasks and inspection data from DB.</Typography>
         </Box>
-        <Button variant="contained" color="primary" size="large" startIcon={<Build />}>Log New Inspection</Button>
+        <Button variant="contained" color="primary" size="large" startIcon={<Build />} onClick={() => setIsFormOpen(true)}>
+          Log New Inspection
+        </Button>
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -94,6 +100,15 @@ export default function ProductQuality() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <TaskForm 
+        open={isFormOpen} 
+        onClose={() => setIsFormOpen(false)} 
+        onSubmit={async (data) => {
+          await addTask(data);
+          setIsFormOpen(false);
+        }}
+      />
     </Box>
   );
 }

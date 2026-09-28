@@ -1,9 +1,13 @@
 import { Typography, Box, Card, CardContent, Grid, LinearProgress, Button, Chip, IconButton, CircularProgress } from '@mui/material';
 import { AddShoppingCart, WarningAmber, MoreVert } from '@mui/icons-material';
-import { useGetInventoryQuery } from '../store/apiSlice';
+import { useGetInventoryQuery, useAddInventoryMutation } from '../store/apiSlice';
+import InventoryForm from '../components/forms/InventoryForm';
+import { useState } from 'react';
 
 export default function InventoryLevels() {
   const { data: inventory, isLoading, error } = useGetInventoryQuery();
+  const [addInventory] = useAddInventoryMutation();
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const getStatusInfo = (level) => {
     if (level < 200) return { status: 'Critical', color: '#ef4444' };
@@ -18,7 +22,9 @@ export default function InventoryLevels() {
           <Typography variant="h4" fontWeight="bold" gutterBottom>Inventory Levels</Typography>
           <Typography variant="body1" color="text.secondary">Live sync with backend database.</Typography>
         </Box>
-        <Button variant="contained" color="primary" size="large" startIcon={<AddShoppingCart />}>Order Stock</Button>
+        <Button variant="contained" color="primary" size="large" startIcon={<AddShoppingCart />} onClick={() => setIsFormOpen(true)}>
+          Order Stock
+        </Button>
       </Box>
 
       {isLoading && <CircularProgress />}
@@ -63,6 +69,15 @@ export default function InventoryLevels() {
           )
         })}
       </Grid>
+      
+      <InventoryForm 
+        open={isFormOpen} 
+        onClose={() => setIsFormOpen(false)} 
+        onSubmit={async (data) => {
+          await addInventory(data);
+          setIsFormOpen(false);
+        }}
+      />
     </Box>
   );
 }
