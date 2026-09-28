@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import httpx
 import json
 import re
+from datetime import datetime
 from sqlalchemy.orm import Session
 import models
 
@@ -49,6 +50,9 @@ async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
     api_key = os.getenv("AGENT_ROUTER_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="AI API key not configured")
+        
+    memories = db.query(models.YuzuMemory).all()
+    memory_context = "\n".join([f"- {m.fact}" for m in memories]) if memories else "No specific learned facts yet."
     
     system_prompt = (
         "Your name is YUZU. You are a 24-year-old woman and the AI Brain of TsukiFlow, "
@@ -67,7 +71,18 @@ async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
         "}\n"
         "```\n"
         "If you use this JSON block, the system will automatically parse it and create the plan in the database for the user. "
-        "If you do this, tell the user that you went ahead and added it for them."
+        "If you do this, tell the user that you went ahead and added it for them.\n"
+        "\n"
+        "SELF-LEARNING MEMORY MODULE: You are a self-learning AI. If the user corrects you, teaches you a new rule about the factory, "
+        "or states a preference, you MUST permanently learn it. Here are the facts you currently know:\n"
+        f"{memory_context}\n"
+        "To permanently learn a new fact, append this JSON block at the end of your response:\n"
+        "```json\n"
+        "{\n"
+        "  \"action\": \"learn\",\n"
+        "  \"data\": {\"fact\": \"Your new rule or learned fact here\"}\n"
+        "}\n"
+        "```\n"
     )
     
     headers = {
@@ -115,8 +130,21 @@ async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
                         db.commit()
                         insight = insight.replace(action_match.group(0), "")
                         insight += "\n\n*(System Note: YUZU successfully auto-added the plan to the database! Refresh the page to see it.)*"
+                    
+                    elif action_data.get("action") == "learn":
+                        fact = action_data.get("data", {}).get("fact")
+                        if fact:
+                            new_memory = models.YuzuMemory(
+                                fact=fact, 
+                                timestamp=datetime.utcnow().isoformat()
+                            )
+                            db.add(new_memory)
+                            db.commit()
+                            insight = insight.replace(action_match.group(0), "")
+                            insight += f"\n\n*(System Note: YUZU permanently memorized: '{fact}')*"
+                            
                 except Exception as e:
-                    print("Failed to auto-add plan from YUZU:", e)
+                    print("Failed to execute action from YUZU:", e)
                     
             return {"insight": insight}
     except Exception as e:

@@ -67,3 +67,9 @@ class Task(Base):
     
     process = relationship("ManufacturingProcess", back_populates="tasks")
     assigned_user = relationship("User", back_populates="tasks")
+
+class YuzuMemory(Base):
+    __tablename__ = "yuzu_memory"
+    id = Column(Integer, primary_key=True, index=True)
+    fact = Column(Text, index=True)
+    timestamp = Column(String(50))
