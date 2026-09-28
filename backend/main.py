@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 import models
 
 from database import engine, Base, get_db
-from routers import plans, inventory, tasks, auth, machines
+from routers import plans, inventory, tasks, auth, machines, supply
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
@@ -36,6 +36,7 @@ app.include_router(inventory.router)
 app.include_router(tasks.router)
 app.include_router(auth.router)
 app.include_router(machines.router)
+app.include_router(supply.router)
 
 class AIRequest(BaseModel):
     context: str

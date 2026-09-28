@@ -83,3 +83,20 @@ class Machine(Base):
     temperature = Column(Float, default=45.0)
     vibration = Column(Float, default=1.2)
     operating_hours = Column(Integer, default=0)
+
+class PurchaseOrder(Base):
+    __tablename__ = "purchase_orders"
+    id = Column(Integer, primary_key=True, index=True)
+    po_number = Column(String(50), unique=True, index=True)
+    vendor_name = Column(String(100))
+    material = Column(String(100))
+    quantity = Column(Integer)
+    status = Column(String(50), default="Issued") # Issued, GRN Generated, Paid
+
+class WasteLog(Base):
+    __tablename__ = "waste_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    material = Column(String(100))
+    quantity_kg = Column(Float)
+    disposal_method = Column(String(100)) # Recycled, Sold as Scrap, Discarded
+    date_logged = Column(String(50))

@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import ProductionPlan from './pages/ProductionPlan';
 import InventoryLevels from './pages/InventoryLevels';
+import ProcurementWaste from './pages/Procurement';
 import ProductQuality from './pages/ProductQuality';
 import EquipmentHealth from './pages/EquipmentHealth';
 import ReportsAnalytics from './pages/ReportsAnalytics';
@@ -23,6 +24,7 @@ function App() {
                 <Route path="/" element={<Dashboard />} />
           <Route path="/production-plan" element={<ProductionPlan />} />
           <Route path="/inventory-levels" element={<InventoryLevels />} />
+          <Route path="/procurement" element={<ProcurementWaste />} />
           <Route path="/product-quality" element={<ProductQuality />} />
           <Route path="/equipment" element={<EquipmentHealth />} />
           <Route path="/reports" element={<ReportsAnalytics />} />

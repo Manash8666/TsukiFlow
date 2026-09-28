@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Badge, Chip } from '@mui/material';
-import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal, TouchApp } from '@mui/icons-material';
+import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal, TouchApp, LocalShipping } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 280;
@@ -9,6 +9,7 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
   { text: 'Production Plan', icon: <AssignmentIcon />, path: '/production-plan' },
   { text: 'Inventory Levels', icon: <InventoryIcon />, path: '/inventory-levels' },
+  { text: 'Procurement & Waste', icon: <LocalShipping />, path: '/procurement' },
   { text: 'Product Quality', icon: <QualityIcon />, path: '/product-quality' },
   { text: 'IoT Equipment', icon: <PrecisionManufacturing />, path: '/equipment' },
   { text: 'Reports & Analytics', icon: <ReportIcon />, path: '/reports' },

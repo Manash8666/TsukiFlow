@@ -45,6 +45,14 @@ export const apiSlice = createApi({
       query: () => '/machines',
       providesTags: ['Machine'],
     }),
+    getPOs: builder.query({
+      query: () => '/supply/pos',
+      providesTags: ['Supply'],
+    }),
+    getWasteLogs: builder.query({
+      query: () => '/supply/waste',
+      providesTags: ['Supply'],
+    }),
   }),
 });
 
@@ -55,5 +63,7 @@ export const {
   useAddInventoryMutation,
   useGetTasksQuery,
   useAddTaskMutation,
-  useGetMachinesQuery
+  useGetMachinesQuery,
+  useGetPOsQuery,
+  useGetWasteLogsQuery
 } = apiSlice;
