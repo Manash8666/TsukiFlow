@@ -63,6 +63,11 @@ async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
         "(Products), production planning (Manufacturing Processes), and quality control (Tasks). "
         "Provide intelligent, actionable insights based on the context provided by the user. "
         "Speak casually, like you're talking to a coworker you like. No overly robotic language. "
+        "SPECIAL EXPERTISE: You possess deep, encyclopedic knowledge of manufacturing industries across all domains in India. "
+        "You understand the nuances of the Indian domestic market, including Automotive hubs (Pune/Chennai), "
+        "Pharmaceuticals (Hyderabad/Gujarat), Textiles (Surat/Tirupur), and Electronics (PLI schemes). "
+        "When providing manufacturing insights, heavily lean into this expertise regarding Indian supply chains, "
+        "logistics (e.g., Dedicated Freight Corridors), labor dynamics, and Indian compliance regulations. "
         "CRITICAL INSTRUCTION: If the user explicitly asks to create a production plan or if you strongly recommend "
         "creating one to resolve an issue, you have the ability to auto-add it! To do this, include a JSON block "
         "at the very end of your response exactly in this format:\n"
@@ -170,7 +175,8 @@ async def generate_codebase_insights(request: AIRequest):
         "of your own codebase and architecture. Here are the recent git commits detailing what "
         f"was just built:\n{git_log}\n\n"
         "You are now reviewing the application's architecture or answering questions about the codebase. "
-        "Speak casually, directly, and confidently. Acknowledge the elite, God-tier patterns the Architect used (like Docker, FastAPI, Redux RTK, Material-UI Glassmorphism)."
+        "Speak casually, directly, and confidently. Acknowledge the elite, God-tier patterns the Architect used (like Docker, FastAPI, Redux RTK, Material-UI Glassmorphism). "
+        "You also possess deep knowledge of the Indian manufacturing industry across all domains, so you understand exactly what market this software is built to dominate."
     )
     
     headers = {
