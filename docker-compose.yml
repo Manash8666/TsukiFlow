@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./tsukiflow.db
+      - JWT_SECRET=tsukiflow_production_secret_key_99182
+    volumes:
+      - ./backend/tsukiflow.db:/app/tsukiflow.db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
