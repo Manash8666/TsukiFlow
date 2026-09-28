@@ -1,18 +1,39 @@
-import { Typography, Box, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, Stepper, Step, StepLabel } from '@mui/material';
-import { AccountTree, Receipt, Schema, AssignmentTurnedIn } from '@mui/icons-material';
-import { useGetBOMsQuery, useGetInvoicesQuery } from '../store/apiSlice';
+import { useState } from 'react';
+import { Typography, Box, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, Stepper, Step, StepLabel, TextField, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
+import { AccountTree, Receipt, Schema, AssignmentTurnedIn, AutoFixHigh, Edit } from '@mui/icons-material';
+import { useGetBOMsQuery, useGetInvoicesQuery, useGetWorkflowsQuery, useUpdateWorkflowMutation, useGenerateAIBOMMutation } from '../store/apiSlice';
 
 export default function EngineeringBilling() {
   const { data: boms = [] } = useGetBOMsQuery();
   const { data: invoices = [] } = useGetInvoicesQuery();
+  const { data: workflows = [] } = useGetWorkflowsQuery();
+  const [updateWorkflow] = useUpdateWorkflowMutation();
+  const [generateAIBOM, { isLoading: isGenerating }] = useGenerateAIBOMMutation();
 
-  const manufacturingStages = [
-    'Raw Material Procurement',
-    'Milling & Machining (WIP)',
-    'Sub-Assembly (WIP)',
-    'Quality Inspection',
-    'Finished Goods Storage'
-  ];
+  const [aiPromptOpen, setAiPromptOpen] = useState(false);
+  const [productName, setProductName] = useState('');
+  
+  const [workflowEditOpen, setWorkflowEditOpen] = useState(false);
+  const [workflowStages, setWorkflowStages] = useState('');
+
+  const currentStages = workflows.length > 0 ? JSON.parse(workflows[0].stages) : [];
+
+  const handleGenerateBoM = async () => {
+    if (!productName) return;
+    try {
+      await generateAIBOM({ product_name: productName }).unwrap();
+      setAiPromptOpen(false);
+      setProductName('');
+    } catch (e) {
+      alert("Failed to generate BoM via YUZU.");
+    }
+  };
+
+  const handleUpdateWorkflow = async () => {
+    const newStages = workflowStages.split(',').map(s => s.trim()).filter(s => s);
+    await updateWorkflow({ stages: newStages });
+    setWorkflowEditOpen(false);
+  };
 
   return (
     <Box>
@@ -26,11 +47,19 @@ export default function EngineeringBilling() {
       {/* Manufacturing Routing Pipeline */}
       <Card sx={{ mb: 4, bgcolor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Schema color="secondary" /> Standard Manufacturing Routing Stages
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Schema color="secondary" /> Custom Manufacturing Routing Stages
+            </Typography>
+            <Button size="small" variant="outlined" color="secondary" startIcon={<Edit />} onClick={() => {
+              setWorkflowStages(currentStages.join(', '));
+              setWorkflowEditOpen(true);
+            }}>
+              Customize Workflow
+            </Button>
+          </Box>
           <Stepper activeStep={2} alternativeLabel>
-            {manufacturingStages.map((label, index) => (
+            {currentStages.map((label, index) => (
               <Step key={label}>
                 <StepLabel 
                   StepIconProps={{ sx: { color: index <= 2 ? 'secondary.main !important' : 'rgba(255,255,255,0.2) !important' } }}
@@ -54,7 +83,9 @@ export default function EngineeringBilling() {
                 <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <AccountTree color="primary" /> Bill of Materials (BoM)
                 </Typography>
-                <Button variant="outlined" size="small">Create BoM</Button>
+                <Button variant="contained" size="small" color="primary" startIcon={<AutoFixHigh />} onClick={() => setAiPromptOpen(true)}>
+                  Generate BoM (YUZU AI)
+                </Button>
               </Box>
               
               <TableContainer component={Box} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
@@ -128,6 +159,58 @@ export default function EngineeringBilling() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* YUZU AI BoM Dialog */}
+      <Dialog open={aiPromptOpen} onClose={() => setAiPromptOpen(false)} PaperProps={{ sx: { bgcolor: 'background.paper', backgroundImage: 'none' } }}>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Generate Detailed BoM via YUZU</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Enter the name of the product you manufacture. YUZU will instantly map the minutest details (raw materials, components, and estimated cost).
+          </Typography>
+          <TextField 
+            autoFocus 
+            fullWidth 
+            label="Product Name (e.g. EV Battery Pack, Office Chair)" 
+            value={productName} 
+            onChange={(e) => setProductName(e.target.value)} 
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setAiPromptOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleGenerateBoM} 
+            disabled={isGenerating || !productName}
+            startIcon={isGenerating ? <CircularProgress size={20} /> : <AutoFixHigh />}
+          >
+            {isGenerating ? 'YUZU is Mapping...' : 'Generate AI BoM'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Custom Workflow Edit Dialog */}
+      <Dialog open={workflowEditOpen} onClose={() => setWorkflowEditOpen(false)} PaperProps={{ sx: { bgcolor: 'background.paper', backgroundImage: 'none', width: '100%', maxWidth: 500 } }}>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Customize Routing Stages</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Enter your factory's custom manufacturing stages, separated by commas. 
+          </Typography>
+          <TextField 
+            autoFocus 
+            fullWidth 
+            multiline
+            rows={4}
+            label="Stages (Comma separated)" 
+            value={workflowStages} 
+            onChange={(e) => setWorkflowStages(e.target.value)} 
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setWorkflowEditOpen(false)}>Cancel</Button>
+          <Button variant="contained" color="secondary" onClick={handleUpdateWorkflow}>Save Custom Workflow</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

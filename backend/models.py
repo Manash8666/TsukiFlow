@@ -115,3 +115,9 @@ class Invoice(Base):
     amount = Column(Float)
     status = Column(String(50), default="Unpaid")
     sow_reference = Column(String(100))
+
+class CustomWorkflow(Base):
+    __tablename__ = "custom_workflows"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100))
+    stages = Column(Text) # Stored as JSON string array

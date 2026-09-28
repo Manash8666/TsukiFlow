@@ -61,6 +61,26 @@ export const apiSlice = createApi({
       query: () => '/engineering/invoices',
       providesTags: ['Finance'],
     }),
+    getWorkflows: builder.query({
+      query: () => '/engineering/workflows',
+      providesTags: ['Workflow'],
+    }),
+    updateWorkflow: builder.mutation({
+      query: (workflow) => ({
+        url: '/engineering/workflows',
+        method: 'POST',
+        body: workflow,
+      }),
+      invalidatesTags: ['Workflow'],
+    }),
+    generateAIBOM: builder.mutation({
+      query: (request) => ({
+        url: '/engineering/boms/generate',
+        method: 'POST',
+        body: request,
+      }),
+      invalidatesTags: ['Engineering'],
+    }),
   }),
 });
 
@@ -75,5 +95,8 @@ export const {
   useGetPOsQuery,
   useGetWasteLogsQuery,
   useGetBOMsQuery,
-  useGetInvoicesQuery
+  useGetInvoicesQuery,
+  useGetWorkflowsQuery,
+  useUpdateWorkflowMutation,
+  useGenerateAIBOMMutation
 } = apiSlice;
