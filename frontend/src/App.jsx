@@ -8,6 +8,7 @@ import ProductQuality from './pages/ProductQuality';
 import EquipmentHealth from './pages/EquipmentHealth';
 import ReportsAnalytics from './pages/ReportsAnalytics';
 import SystemDiagnostics from './pages/SystemDiagnostics';
+import WorkerKiosk from './pages/WorkerKiosk';
 
 function App() {
   return (
@@ -31,6 +32,9 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
+        
+        {/* Kiosk Mode is accessed on tablets on the factory floor */}
+        <Route path="/kiosk" element={<WorkerKiosk />} />
       </Routes>
     </Router>
   );
