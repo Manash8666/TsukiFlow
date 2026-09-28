@@ -73,3 +73,13 @@ class YuzuMemory(Base):
     id = Column(Integer, primary_key=True, index=True)
     fact = Column(Text, index=True)
     timestamp = Column(String(50))
+
+class Machine(Base):
+    __tablename__ = "machines"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100))
+    machine_type = Column(String(100))
+    status = Column(String(50), default="Operational")
+    temperature = Column(Float, default=45.0)
+    vibration = Column(Float, default=1.2)
+    operating_hours = Column(Integer, default=0)

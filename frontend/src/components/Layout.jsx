@@ -10,6 +10,7 @@ const menuItems = [
   { text: 'Production Plan', icon: <AssignmentIcon />, path: '/production-plan' },
   { text: 'Inventory Levels', icon: <InventoryIcon />, path: '/inventory-levels' },
   { text: 'Product Quality', icon: <QualityIcon />, path: '/product-quality' },
+  { text: 'IoT Equipment', icon: <PrecisionManufacturing />, path: '/equipment' },
   { text: 'Reports & Analytics', icon: <ReportIcon />, path: '/reports' },
   { text: 'YUZU Diagnostics', icon: <Terminal />, path: '/diagnostics' },
 ];
