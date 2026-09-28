@@ -100,3 +100,18 @@ class WasteLog(Base):
     quantity_kg = Column(Float)
     disposal_method = Column(String(100)) # Recycled, Sold as Scrap, Discarded
     date_logged = Column(String(50))
+
+class BillOfMaterial(Base):
+    __tablename__ = "boms"
+    id = Column(Integer, primary_key=True, index=True)
+    product_name = Column(String(100))
+    components = Column(Text) # Stored as JSON string
+    total_cost = Column(Float)
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+    id = Column(Integer, primary_key=True, index=True)
+    client_name = Column(String(100))
+    amount = Column(Float)
+    status = Column(String(50), default="Unpaid")
+    sow_reference = Column(String(100))

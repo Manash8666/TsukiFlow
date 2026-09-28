@@ -53,6 +53,14 @@ export const apiSlice = createApi({
       query: () => '/supply/waste',
       providesTags: ['Supply'],
     }),
+    getBOMs: builder.query({
+      query: () => '/engineering/boms',
+      providesTags: ['Engineering'],
+    }),
+    getInvoices: builder.query({
+      query: () => '/engineering/invoices',
+      providesTags: ['Finance'],
+    }),
   }),
 });
 
@@ -65,5 +73,7 @@ export const {
   useAddTaskMutation,
   useGetMachinesQuery,
   useGetPOsQuery,
-  useGetWasteLogsQuery
+  useGetWasteLogsQuery,
+  useGetBOMsQuery,
+  useGetInvoicesQuery
 } = apiSlice;
