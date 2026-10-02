@@ -1,16 +1,15 @@
 import { Typography, Box, Card, CardContent, Grid, Button } from '@mui/material';
 import { Download as DownloadIcon, PictureAsPdf as PdfIcon } from '@mui/icons-material';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Tooltip, Legend } from 'recharts';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 const data = [
-  { name: 'Widget A', value: 400 },
-  { name: 'Gadget B', value: 300 },
-  { name: 'Component C', value: 300 },
-  { name: 'Assembly D', value: 200 },
+  { name: 'Widget A', value: 400, fill: '#3b82f6' },
+  { name: 'Gadget B', value: 300, fill: '#10b981' },
+  { name: 'Component C', value: 300, fill: '#f59e0b' },
+  { name: 'Assembly D', value: 200, fill: '#8b5cf6' },
 ];
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
 
 export default function ReportsAnalytics() {
   const handleGeneratePDF = () => {
@@ -76,13 +75,9 @@ export default function ReportsAnalytics() {
               <Box sx={{ flexGrow: 1, minHeight: 0 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={data} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value" stroke="none">
-                      {data.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
+                    <Pie data={data} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value" stroke="none" />
                     <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: 8, color: '#f8fafc' }} />
-                    <Legend verticalAlign="bottom" height={36}/>
+                    <Legend height={36}/>
                   </PieChart>
                 </ResponsiveContainer>
               </Box>

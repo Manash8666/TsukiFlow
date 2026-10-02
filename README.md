@@ -1,22 +1,22 @@
-# TsukiFlow
+# `TsukiFlow`
 
-TsukiFlow is an enterprise-grade Manufacturing ERP tailored specifically for the Indian manufacturing sector (Automotive in Pune/Chennai, Pharmaceuticals in Hyderabad/Gujarat, Textiles in Surat/Tirupur, etc.). It acts as the "Missing Middle" connecting high-level ERP (like SAP/Oracle) to the shop floor hardware.
+`TsukiFlow` is an enterprise-grade Manufacturing `ERP` tailored specifically for the Indian manufacturing sector (Automotive in Pune/Chennai, Pharmaceuticals in Hyderabad/Gujarat, Textiles in Surat/`Tirupur`, etc.). It acts as the "Missing Middle" connecting high-level `ERP` (like SAP/Oracle) to the shop floor hardware.
 
 ## Key Features
 
 *   **Dynamic Workflows:** Real-time production routing without hardcoded schema limitations.
-*   **Multi-Level Bill of Materials (BoM):** Comprehensive tracking of nested components.
+*   **Multi-Level Bill of Materials (`BoM`):** Comprehensive tracking of nested components.
 *   **End-to-End Traceability Dashboard:** Forward and backward genealogy tracking of lots, components, and finished goods.
-*   **Machine Downtime & OEE Logging:** Real-time metrics capture and reporting directly from the shop floor kiosk.
+*   **Machine Downtime & `OEE` Logging:** Real-time metrics capture and reporting directly from the shop floor kiosk.
 *   **Scrap & Waste Tracking:** Precision logging of material fall-off to monitor yield drop.
-*   **YUZU AI Brain:** Context-aware intelligent insights that read shop-floor data, memories, codebase logs, and active tasks.
+*   **`YUZU` AI Brain:** Context-aware intelligent insights that read shop-floor data, memories, codebase logs, and active tasks.
 *   **PDF Reporting Engine:** Exportable analytics and metrics.
 
 ## Tech Stack
 
-*   **Frontend:** React (Vite) + Material UI (MUI) + Redux Toolkit (RTK Query) + jsPDF + Recharts
-*   **Backend:** FastAPI (Python) + SQLAlchemy ORM + SQLite (Development) + Pydantic
-*   **AI Integration:** YUZU AI Insights powered by GPT-4o-mini (Local fallback capable)
+*   **Frontend:** React (Vite) + Material UI (`MUI`) + `Redux` Toolkit (`RTK` Query) + `jsPDF` + `Recharts`
+*   **Backend:** `FastAPI` (Python) + SQLAlchemy ORM + SQLite (Development) + `Pydantic`
+*   **AI Integration:** `YUZU` AI Insights powered by `GPT-4o-mini` (Local fallback capable)
 *   **DevOps:** Docker & Docker Compose
 
 ## Quickstart
@@ -55,7 +55,7 @@ TsukiFlow is an enterprise-grade Manufacturing ERP tailored specifically for the
 
 ## Architecture
 
-TsukiFlow uses a strict separation of concerns:
+`TsukiFlow` uses a strict separation of concerns:
 *   `apiSlice.js` manages all remote state, caching, and cache-invalidation on the frontend.
-*   Backend routers (`engineering.py`, `supply.py`, `machines.py`, etc.) enforce strict typing via Pydantic and MyPy.
+*   Backend routers (`engineering.py`, `supply.py`, `machines.py`, etc.) enforce strict typing via `Pydantic` and `MyPy`.
 *   The SQLite database acts as a standalone local-first storage, making the system resilient to connectivity drops on the factory floor.
