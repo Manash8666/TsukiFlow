@@ -2,6 +2,8 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, Text, Table, 
 from sqlalchemy.orm import relationship
 from database import Base
 
+PRODUCT_ID_FK = "products.id"
+
 user_manufacturing_processes = Table(
     'user_manufacturing_processes',
     Base.metadata,
@@ -27,7 +29,7 @@ class Product(Base):
     description = Column(Text)
     price = Column(Float)
     inventory_level = Column(Integer, default=0)
-    item_type = Column(String(50), default="Finished Good") # RM, WIP, SFG, FG
+    item_type = Column(String(50), default="Finished Good") # raw material, work in progress, semi-finished, finished good
     
     orders = relationship("Order", back_populates="product")
     processes = relationship("ManufacturingProcess", back_populates="product")
@@ -45,7 +47,7 @@ class Order(Base):
     __tablename__ = "orders"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    product_id = Column(Integer, ForeignKey("products.id"))
+    product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK))
     quantity = Column(Integer)
     status = Column(String(50), default="pending")
     
@@ -57,7 +59,7 @@ class ManufacturingProcess(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100))
     description = Column(Text)
-    product_id = Column(Integer, ForeignKey("products.id"))
+    product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK))
     quantity = Column(Integer)
     status = Column(String(50), default="Planned")
     start_date = Column(DateTime(timezone=True))
@@ -101,7 +103,7 @@ class PurchaseOrder(Base):
     vendor_name = Column(String(100))
     material = Column(String(100))
     quantity = Column(Integer)
-    status = Column(String(50), default="Issued") # Issued, GRN Generated, Paid
+    status = Column(String(50), default="Issued") # Issued, Goods Receipt Generated, Paid
 
 class GRN(Base):
     __tablename__ = "grns"
@@ -131,10 +133,10 @@ class BillOfMaterial(Base):
 class BoMItem(Base):
     __tablename__ = "bom_items"
     id = Column(Integer, primary_key=True, index=True)
-    parent_product_id = Column(Integer, ForeignKey("products.id"))
-    child_product_id = Column(Integer, ForeignKey("products.id"))
+    parent_product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK))
+    child_product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK))
     quantity_required = Column(Float)
-    stage = Column(String(50)) # e.g. "SFG-1", "Final Assembly"
+    stage = Column(String(50)) # e.g. "Semi-Finished 1", "Final Assembly"
     
     parent_product = relationship("Product", foreign_keys=[parent_product_id])
     child_product = relationship("Product", foreign_keys=[child_product_id])
