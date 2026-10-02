@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Text, Table
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Text, Table, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -60,8 +60,8 @@ class ManufacturingProcess(Base):
     product_id = Column(Integer, ForeignKey("products.id"))
     quantity = Column(Integer)
     status = Column(String(50), default="Planned")
-    start_date = Column(String(50))
-    end_date = Column(String(50))
+    start_date = Column(DateTime(timezone=True))
+    end_date = Column(DateTime(timezone=True))
     
     users = relationship("User", secondary=user_manufacturing_processes, back_populates="processes")
     product = relationship("Product", back_populates="processes")
@@ -82,7 +82,7 @@ class YuzuMemory(Base):
     __tablename__ = "yuzu_memory"
     id = Column(Integer, primary_key=True, index=True)
     fact = Column(Text, index=True)
-    timestamp = Column(String(50))
+    timestamp = Column(DateTime(timezone=True))
 
 class Machine(Base):
     __tablename__ = "machines"
@@ -109,7 +109,7 @@ class GRN(Base):
     po_id = Column(Integer, ForeignKey("purchase_orders.id"))
     received_quantity = Column(Integer)
     status = Column(String(50), default="QUARANTINE") # QUARANTINE, APPROVED, REJECTED
-    timestamp = Column(String(50))
+    timestamp = Column(DateTime(timezone=True))
     
     po = relationship("PurchaseOrder", backref="grns")
 
@@ -119,7 +119,7 @@ class WasteLog(Base):
     material = Column(String(100))
     quantity_kg = Column(Float)
     disposal_method = Column(String(100)) # Recycled, Sold as Scrap, Discarded
-    date_logged = Column(String(50))
+    date_logged = Column(DateTime(timezone=True))
 
 class BillOfMaterial(Base):
     __tablename__ = "boms"
@@ -135,6 +135,9 @@ class BoMItem(Base):
     child_product_id = Column(Integer, ForeignKey("products.id"))
     quantity_required = Column(Float)
     stage = Column(String(50)) # e.g. "SFG-1", "Final Assembly"
+    
+    parent_product = relationship("Product", foreign_keys=[parent_product_id])
+    child_product = relationship("Product", foreign_keys=[child_product_id])
 
 class DowntimeLog(Base):
     __tablename__ = "downtime_logs"
@@ -142,7 +145,7 @@ class DowntimeLog(Base):
     machine_id = Column(Integer, ForeignKey("machines.id"))
     reason = Column(String(100)) # Setup, Machine Fault, Material Shortage
     duration_minutes = Column(Integer, default=0)
-    timestamp = Column(String(50))
+    timestamp = Column(DateTime(timezone=True))
     
     machine = relationship("Machine", backref="downtimes")
 

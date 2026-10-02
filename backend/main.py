@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -9,8 +9,12 @@ import re
 import subprocess
 import asyncio
 from datetime import datetime, timezone
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 import models
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from database import engine, Base, get_db
 from routers import plans, inventory, tasks, auth, machines, supply, engineering
@@ -22,9 +26,16 @@ load_dotenv()
 
 app = FastAPI(title="TsukiFlow API", description="Backend API for TsukiFlow Manufacturing Software")
 
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:80,http://localhost:3000,http://localhost:5173,https://app.tsukiflow.com")
+allowed_origins = [origin.strip() for origin in cors_origins_env.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=allowed_origins, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -130,8 +141,9 @@ def _build_local_insight_response(request: AIRequest, context_data: dict) -> dic
     return {"insight": "\n".join(lines)}
 
 @app.post("/api/ai/insights")
-async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
-    plans = db.query(models.ManufacturingProcess).all()
+@limiter.limit("5/minute")
+async def generate_insights(request_body: AIRequest, request: Request, db: Session = Depends(get_db)):
+    plans = db.query(models.ManufacturingProcess).options(joinedload(models.ManufacturingProcess.product)).all()
     inventory = db.query(models.Product).all()
     tasks = db.query(models.Task).all()
     machines = db.query(models.Machine).all()
@@ -175,7 +187,7 @@ async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
                         "messages": [
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": (
-                                f"Context Query: {request.context}\n"
+                                f"Context Query: {request_body.context}\n"
                                 f"SYSTEM STATE:\n"
                                 f"Offline Machines: {len(context_data['offline_machines'])}\n"
                                 f"Total Downtime Logs: {len(downtime)}\n"
@@ -195,7 +207,7 @@ async def generate_insights(request: AIRequest, db: Session = Depends(get_db)):
         except Exception:
             pass  # Fall through to data-driven response
 
-    return _build_local_insight_response(request, context_data)
+    return _build_local_insight_response(request_body, context_data)
 
 
 @app.post("/api/ai/codebase")

@@ -12,9 +12,8 @@ export default function WorkerKiosk() {
   const machineId = 1;
   const currentMachine = machines.find(m => m.id === machineId);
   const temp = currentMachine ? currentMachine.temperature : 60;
-  const hours = currentMachine ? currentMachine.operating_hours : 100;
   
-  // Calculate mock dynamic OEE (for demo) based on hours and status
+  // Calculate mock dynamic OEE (for demo) based on temp and status
   const availability = machineStatus === 'RUNNING' ? 95 : 60;
   const performance = Math.max(50, 100 - (temp - 60)); 
   const quality = 98; // hardcoded for kiosk demo
@@ -38,11 +37,12 @@ export default function WorkerKiosk() {
 
   const handleSelectReason = async (reasonCode) => {
     try {
+      const ts = new Date().toISOString();
       await logDowntime({
         machine_id: 1, // hardcoded for CNC-Lathe-01
         reason: reasonCode,
         duration_minutes: 0, // start of downtime
-        timestamp: new Date().toISOString()
+        timestamp: ts
       }).unwrap();
       
       setMachineStatus('STOPPED');

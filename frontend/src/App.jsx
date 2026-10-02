@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import ProductionPlan from './pages/ProductionPlan';
@@ -21,18 +22,20 @@ function App() {
         <Route path="/*" element={
           <ProtectedRoute>
             <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-          <Route path="/production-plan" element={<ProductionPlan />} />
-          <Route path="/inventory-levels" element={<InventoryLevels />} />
-          <Route path="/procurement" element={<ProcurementWaste />} />
-          <Route path="/engineering" element={<EngineeringBilling />} />
-          <Route path="/product-quality" element={<ProductQuality />} />
-          <Route path="/equipment" element={<EquipmentHealth />} />
-          <Route path="/reports" element={<ReportsAnalytics />} />
-                <Route path="/diagnostics" element={<SystemDiagnostics />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+              <ErrorBoundary>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+            <Route path="/production-plan" element={<ProductionPlan />} />
+            <Route path="/inventory-levels" element={<InventoryLevels />} />
+            <Route path="/procurement" element={<ProcurementWaste />} />
+            <Route path="/engineering" element={<EngineeringBilling />} />
+            <Route path="/product-quality" element={<ProductQuality />} />
+            <Route path="/equipment" element={<EquipmentHealth />} />
+            <Route path="/reports" element={<ReportsAnalytics />} />
+                  <Route path="/diagnostics" element={<SystemDiagnostics />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </ErrorBoundary>
             </Layout>
           </ProtectedRoute>
         } />
