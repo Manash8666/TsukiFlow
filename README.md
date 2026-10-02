@@ -5,7 +5,7 @@
 ## Key Features
 
 *   **Dynamic Workflows:** Real-time production routing without hardcoded schema limitations.
-*   **Multi-Level Bill of Materials (`BoM`):** Comprehensive tracking of nested components.
+*   **Multilevel Bill of Materials (`BoM`):** Comprehensive tracking of nested components.
 *   **End-to-End Traceability Dashboard:** Forward and backward genealogy tracking of lots, components, and finished goods.
 *   **Machine Downtime & `OEE` Logging:** Real-time metrics capture and reporting directly from the shop floor kiosk.
 *   **Scrap & Waste Tracking:** Precision logging of material fall-off to monitor yield drop.
