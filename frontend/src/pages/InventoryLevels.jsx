@@ -11,9 +11,9 @@ export default function InventoryLevels() {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const getStatusInfo = (level) => {
-    if (level < 200) return { status: 'Critical', color: '#ef4444' };
-    if (level < 400) return { status: 'Low Stock', color: '#f59e0b' };
-    return { status: 'Optimal', color: '#10b981' };
+    if (level < 200) return { status: 'Critical', color: 'error' };
+    if (level < 400) return { status: 'Low Stock', color: 'warning' };
+    return { status: 'Optimal', color: 'success' };
   };
 
   return (
@@ -40,28 +40,28 @@ export default function InventoryLevels() {
           return (
             <Grid item xs={12} md={6} lg={4} key={item.id}>
               <Card className="hover-lift" sx={{ position: 'relative', overflow: 'hidden' }}>
-                <Box sx={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', bgcolor: color }} />
+                <Box sx={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', bgcolor: `${color}.main` }} />
                 <CardContent sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                     <Typography variant="h6" fontWeight="600">{item.name}</Typography>
                     <IconButton size="small"><MoreVert /></IconButton>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1, mb: 3 }}>
-                    <Typography variant="h3" fontWeight="800" sx={{ color: color }}>{item.inventory_level}</Typography>
+                    <Typography variant="h3" fontWeight="800" sx={{ color: `${color}.main` }}>{item.inventory_level}</Typography>
                     <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 0.5 }}>/ {capacity} units</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Chip size="small" label={status} sx={{ bgcolor: `${color}22`, color: color, fontWeight: 'bold' }} icon={status !== 'Optimal' ? <WarningAmber fontSize="small" color="inherit"/> : null}/>
+                    <Chip size="small" label={status} color={color} variant="outlined" sx={{ fontWeight: 'bold', borderWidth: 2 }} icon={status !== 'Optimal' ? <WarningAmber fontSize="small" /> : null}/>
                     <Typography variant="body2" color="text.secondary" fontWeight={600}>{percentage}% Full</Typography>
                   </Box>
                   <LinearProgress 
                     variant="determinate" 
                     value={percentage} 
+                    color={color}
                     sx={{ 
                       height: 8, 
                       borderRadius: 4, 
-                      bgcolor: 'rgba(255,255,255,0.05)',
-                      '& .MuiLinearProgress-bar': { bgcolor: color, borderRadius: 4 }
+                      bgcolor: 'rgba(255,255,255,0.05)'
                     }} 
                   />
                 </CardContent>

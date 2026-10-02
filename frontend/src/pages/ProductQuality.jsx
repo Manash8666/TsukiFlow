@@ -1,13 +1,23 @@
 import { Typography, Box, Card, CardContent, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress } from '@mui/material';
 import { Build, AssignmentTurnedIn, CheckCircleOutlined, CancelOutlined } from '@mui/icons-material';
-import { useGetTasksQuery, useAddTaskMutation } from '../store/apiSlice';
+import { useGetTasksQuery, useAddTaskMutation, useGetGRNsQuery, useUpdateGRNStatusMutation } from '../store/apiSlice';
 import TaskForm from '../components/forms/TaskForm';
 import { useState } from 'react';
 
 export default function ProductQuality() {
-  const { data: tasks, isLoading, error } = useGetTasksQuery();
+  const { data: tasks = [] } = useGetTasksQuery();
+  const { data: grns = [] } = useGetGRNsQuery();
   const [addTask] = useAddTaskMutation();
+  const [updateGRNStatus] = useUpdateGRNStatusMutation();
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const handleUpdateGRN = async (id, status) => {
+    try {
+      await updateGRNStatus({ grn_id: id, status }).unwrap();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <Box>
@@ -63,36 +73,35 @@ export default function ProductQuality() {
         </Grid>
       </Grid>
 
+      <Typography variant="h5" fontWeight="bold" sx={{ mb: 2, mt: 4 }}>Incoming Quality Control (IQC) - GRN Quarantine</Typography>
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
         <Table>
           <TableHead sx={{ bgcolor: 'rgba(15, 23, 42, 0.8)' }}>
             <TableRow>
-              <TableCell>Task ID</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Process ID</TableCell>
+              <TableCell>GRN ID</TableCell>
+              <TableCell>PO ID</TableCell>
+              <TableCell>Received Qty</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading ? (
-              <TableRow><TableCell colSpan={4} align="center"><CircularProgress /></TableCell></TableRow>
-            ) : error ? (
-              <TableRow><TableCell colSpan={4} align="center" color="error">Error loading data</TableCell></TableRow>
-            ) : tasks && tasks.length === 0 ? (
-               <TableRow><TableCell colSpan={4} align="center">No quality tasks found.</TableCell></TableRow>
+            {grnLoading ? (
+              <TableRow><TableCell colSpan={5} align="center"><CircularProgress /></TableCell></TableRow>
+            ) : grns && grns.filter(g => g.status === 'QUARANTINE').length === 0 ? (
+               <TableRow><TableCell colSpan={5} align="center">No GRNs in quarantine.</TableCell></TableRow>
             ) : (
-              tasks.map((row) => (
+              grns?.filter(g => g.status === 'QUARANTINE').map((row) => (
                 <TableRow key={row.id} className="hover-lift" sx={{ transition: 'background-color 0.2s', '&:hover': { bgcolor: 'rgba(255,255,255,0.02)' } }}>
-                  <TableCell fontWeight={600}>{row.id}</TableCell>
-                  <TableCell>{row.description}</TableCell>
-                  <TableCell>{row.process_id}</TableCell>
+                  <TableCell fontWeight={600}>GRN-{row.id}</TableCell>
+                  <TableCell>PO-{row.po_id}</TableCell>
+                  <TableCell>{row.received_quantity}</TableCell>
                   <TableCell>
-                    <Chip 
-                      label={row.status} 
-                      size="small"
-                      color={row.status === 'Passed' ? 'success' : row.status === 'Failed' ? 'error' : 'warning'} 
-                      variant="filled"
-                    />
+                    <Chip label={row.status} size="small" color="warning" variant="filled" />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Button size="small" color="success" variant="outlined" sx={{ mr: 1 }} onClick={() => handleUpdateGRN(row.id, 'APPROVED')}>Approve</Button>
+                    <Button size="small" color="error" variant="outlined" onClick={() => handleUpdateGRN(row.id, 'REJECTED')}>Reject</Button>
                   </TableCell>
                 </TableRow>
               ))

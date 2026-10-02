@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Badge, Chip } from '@mui/material';
 import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal, TouchApp, LocalShipping, Schema } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import TsukiFlowLogo from './TsukiFlowLogo';
 
 const drawerWidth = 280;
 
@@ -29,7 +30,7 @@ export default function Layout({ children }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar sx={{ my: 2, display: 'flex', alignItems: 'center', gap: 1.5, px: 3 }}>
         <Box sx={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src="/tsukiflow-logo.jpg" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: 8, objectFit: 'cover' }} />
+          <TsukiFlowLogo color="#3b82f6" />
         </Box>
         <Typography variant="h5" component="div" sx={{ fontWeight: 800, letterSpacing: 1, color: '#f8fafc' }}>
           TsukiFlow

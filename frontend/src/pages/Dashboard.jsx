@@ -21,10 +21,10 @@ const yieldData = [
 
 export default function Dashboard() {
   const metrics = [
-    { title: 'Total Production', value: '24,592', change: '+12.5%', isUp: true, icon: <PrecisionManufacturing />, color: '#3b82f6' },
-    { title: 'Active Orders', value: '142', change: '+4.2%', isUp: true, icon: <InventoryIcon />, color: '#10b981' },
-    { title: 'Quality Issues', value: '18', change: '-2.4%', isUp: false, icon: <WarningAmber />, color: '#f59e0b' },
-    { title: 'OEE Score', value: '87.4%', change: '+1.2%', isUp: true, icon: <TrendingUp />, color: '#8b5cf6' },
+    { title: 'Total Production', value: '24,592', change: '+12.5%', isUp: true, icon: <PrecisionManufacturing />, color: 'primary.main' },
+    { title: 'Active Orders', value: '142', change: '+4.2%', isUp: true, icon: <InventoryIcon />, color: 'success.main' },
+    { title: 'Quality Issues', value: '18', change: '-2.4%', isUp: false, icon: <WarningAmber />, color: 'warning.main' },
+    { title: 'OEE Score', value: '87.4%', change: '+1.2%', isUp: true, icon: <TrendingUp />, color: 'secondary.main' },
   ];
 
   return (

@@ -25,6 +25,13 @@ def seed_db():
     db.add_all([m1, m2])
     db.commit()
 
+    # Multi-level BoM setup
+    bom_item1 = models.BoMItem(parent_product_id=p1.id, child_product_id=p2.id, quantity_required=2.0, stage="SFG-1")
+    bom_item2 = models.BoMItem(parent_product_id=p1.id, child_product_id=p3.id, quantity_required=1.5, stage="Final Assembly")
+    bom_item3 = models.BoMItem(parent_product_id=p2.id, child_product_id=p4.id, quantity_required=0.5, stage="Chemical Wash")
+    db.add_all([bom_item1, bom_item2, bom_item3])
+    db.commit()
+
     # Tasks (Quality Control)
     t1 = models.Task(description="Inspection for Widget A", process_id=m1.id, status="Passed")
     t2 = models.Task(description="Inspection for Gadget B", process_id=m2.id, status="Failed")

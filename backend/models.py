@@ -27,6 +27,7 @@ class Product(Base):
     description = Column(Text)
     price = Column(Float)
     inventory_level = Column(Integer, default=0)
+    item_type = Column(String(50), default="Finished Good") # RM, WIP, SFG, FG
     
     orders = relationship("Order", back_populates="product")
     processes = relationship("ManufacturingProcess", back_populates="product")
@@ -102,6 +103,16 @@ class PurchaseOrder(Base):
     quantity = Column(Integer)
     status = Column(String(50), default="Issued") # Issued, GRN Generated, Paid
 
+class GRN(Base):
+    __tablename__ = "grns"
+    id = Column(Integer, primary_key=True, index=True)
+    po_id = Column(Integer, ForeignKey("purchase_orders.id"))
+    received_quantity = Column(Integer)
+    status = Column(String(50), default="QUARANTINE") # QUARANTINE, APPROVED, REJECTED
+    timestamp = Column(String(50))
+    
+    po = relationship("PurchaseOrder", backref="grns")
+
 class WasteLog(Base):
     __tablename__ = "waste_logs"
     id = Column(Integer, primary_key=True, index=True)
@@ -116,6 +127,24 @@ class BillOfMaterial(Base):
     product_name = Column(String(100))
     components = Column(Text) 
     total_cost = Column(Float)
+
+class BoMItem(Base):
+    __tablename__ = "bom_items"
+    id = Column(Integer, primary_key=True, index=True)
+    parent_product_id = Column(Integer, ForeignKey("products.id"))
+    child_product_id = Column(Integer, ForeignKey("products.id"))
+    quantity_required = Column(Float)
+    stage = Column(String(50)) # e.g. "SFG-1", "Final Assembly"
+
+class DowntimeLog(Base):
+    __tablename__ = "downtime_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    machine_id = Column(Integer, ForeignKey("machines.id"))
+    reason = Column(String(100)) # Setup, Machine Fault, Material Shortage
+    duration_minutes = Column(Integer, default=0)
+    timestamp = Column(String(50))
+    
+    machine = relationship("Machine", backref="downtimes")
 
 class Invoice(Base):
     __tablename__ = "invoices"

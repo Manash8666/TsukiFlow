@@ -43,15 +43,52 @@ class ManualBOMRequest(BaseModel):
     components: str
     total_cost: float
 
+class ChildBOMItem(BaseModel):
+    child_id: int
+    child_name: str
+    quantity_required: float
+    stage: str
+
+class MultiLevelBOMSchema(BaseModel):
+    parent_product_id: int
+    parent_product_name: str
+    children: List[ChildBOMItem]
+
 @router.get("/boms", response_model=List[BOMSchema])
-def read_boms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_boms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[models.BillOfMaterial]:
     if db.query(models.BillOfMaterial).count() == 0:
         db.add(models.BillOfMaterial(product_name="V8 Engine Block", components=json.dumps({"Aluminum (kg)": 150, "Steel Bolts (units)": 45}), total_cost=2450.00))
         db.commit()
     return db.query(models.BillOfMaterial).offset(skip).limit(limit).all()
 
+@router.get("/multilevel-boms", response_model=List[MultiLevelBOMSchema])
+def read_multilevel_boms(db: Session = Depends(get_db)) -> list:
+    bom_items = db.query(models.BoMItem).all()
+    
+    grouped = {}
+    for item in bom_items:
+        if item.parent_product_id not in grouped:
+            parent = db.query(models.Product).filter(models.Product.id == item.parent_product_id).first()
+            if not parent: continue
+            grouped[item.parent_product_id] = {
+                "parent_product_id": parent.id,
+                "parent_product_name": parent.name,
+                "children": []
+            }
+        
+        child = db.query(models.Product).filter(models.Product.id == item.child_product_id).first()
+        if child:
+            grouped[item.parent_product_id]["children"].append({
+                "child_id": child.id,
+                "child_name": child.name,
+                "quantity_required": item.quantity_required,
+                "stage": item.stage
+            })
+            
+    return list(grouped.values())
+
 @router.get("/invoices", response_model=List[InvoiceSchema])
-def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[models.Invoice]:
     if db.query(models.Invoice).count() == 0:
         db.add(models.Invoice(client_name="Tata Motors", amount=150000.00, status="Paid", sow_reference="SOW-TM-2026-A1"))
         db.add(models.Invoice(client_name="Mahindra Aerospace", amount=85000.00, status="Unpaid", sow_reference="SOW-MA-2026-B9"))
@@ -59,61 +96,88 @@ def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
     return db.query(models.Invoice).offset(skip).limit(limit).all()
 
 @router.get("/workflows", response_model=List[WorkflowSchema])
-def read_workflows(db: Session = Depends(get_db)):
+def read_workflows(db: Session = Depends(get_db)) -> List[models.CustomWorkflow]:
     if db.query(models.CustomWorkflow).count() == 0:
         db.add(models.CustomWorkflow(name="Default Workflow", stages=json.dumps(['Procurement', 'Milling', 'Assembly', 'QA', 'Storage'])))
         db.commit()
     return db.query(models.CustomWorkflow).all()
 
 @router.post("/workflows")
-def update_workflow(workflow: dict, db: Session = Depends(get_db)):
+def update_workflow(workflow: dict, db: Session = Depends(get_db)) -> models.CustomWorkflow:
     wf = db.query(models.CustomWorkflow).first()
     wf.stages = json.dumps(workflow.get("stages", []))
     db.commit()
     return wf
 
 @router.post("/boms/generate")
-async def generate_ai_bom(request: GenerateBOMRequest, db: Session = Depends(get_db)):
-    api_key = os.getenv("AGENT_ROUTER_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="AI API key not configured")
-        
+async def generate_ai_bom(request: GenerateBOMRequest, db: Session = Depends(get_db)) -> models.BillOfMaterial:
+    api_key = os.getenv("OPENAI_API_KEY") or os.getenv("AGENT_ROUTER_API_KEY")
+    api_base = os.getenv("YUZU_API_BASE", "https://api.openai.com/v1")
+    
     system_prompt = (
-        "You are an elite Manufacturing AI. The user will provide a product name (e.g., Electric Vehicle Battery, Cotton Shirt, Injection Molded Toy). "
-        "Your job is to generate a highly detailed Bill of Materials (BoM) mapped to the minutest details for that specific industry. "
-        "You MUST return ONLY a raw JSON object in this exact format: "
-        "{\"components\": {\"Material 1\": qty, \"Material 2\": qty, ...}, \"total_cost\": estimated_usd_number}. "
-        "Do not include markdown blocks, just the raw JSON."
+        "You are an elite Manufacturing AI. The user will provide a product name. "
+        "Your job is to generate a highly detailed Bill of Materials (BoM) mapped to the minutest details. "
+        "You MUST return ONLY a raw JSON object exactly like this: "
+        "{\"components\": {\"Material 1\": qty, \"Material 2\": qty}, \"total_cost\": estimated_usd_number}. "
     )
     
-    payload = {
-        "model": "gpt-4o",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Generate a detailed BoM for: {request.product_name}"}
-        ]
-    }
-    
-    try:
-        async with httpx.AsyncClient() as client:
-            res = await client.post("https://api.agentrouter.com/v1/chat/completions", headers={"Authorization": f"Bearer {api_key}"}, json=payload, timeout=30.0)
-            res.raise_for_status()
-            data = res.json()
-            bom_json = json.loads(data["choices"][0]["message"]["content"].replace('```json', '').replace('```', '').strip())
+    if api_key:
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Generate a detailed BoM for: {request.product_name}"}
+            ]
+        }
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.post(f"{api_base}/chat/completions", headers={"Authorization": f"Bearer {api_key}"}, json=payload, timeout=25.0)
+                res.raise_for_status()
+                data = res.json()
+                content = data["choices"][0]["message"]["content"]
+                
+                # Cleanup potential markdown around JSON
+                content = content.replace('```json', '').replace('```', '').strip()
+                bom_json = json.loads(content)
+                
+                new_bom = models.BillOfMaterial(
+                    product_name=request.product_name,
+                    components=json.dumps(bom_json.get("components", {"Fallback Component": 1})),
+                    total_cost=float(bom_json.get("total_cost", 999.0))
+                )
+                db.add(new_bom)
+                db.commit()
+                return new_bom
+        except Exception as e:
+            print("API BoM Generation Failed, falling back to local heuristic:", e)
             
-            new_bom = models.BillOfMaterial(
-                product_name=request.product_name,
-                components=json.dumps(bom_json["components"]),
-                total_cost=float(bom_json["total_cost"])
-            )
-            db.add(new_bom)
-            db.commit()
-            return new_bom
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # --- Offline Data-Driven Fallback ---
+    name_lower = request.product_name.lower()
+    
+    if "shirt" in name_lower or "tshirt" in name_lower or "textile" in name_lower:
+        components = {"Cotton Fabric (meters)": 1.5, "Polyester Thread (spools)": 0.1, "Buttons (units)": 5, "Dye (liters)": 0.2, "Packaging (boxes)": 1}
+        cost = 4.50
+    elif "pharma" in name_lower or "tablet" in name_lower or "medicine" in name_lower:
+        components = {"Active Pharmaceutical Ingredient (mg)": 500, "Excipients (mg)": 150, "Blister Foil (sq cm)": 50, "Carton Box": 1}
+        cost = 0.85
+    elif "auto" in name_lower or "engine" in name_lower or "car" in name_lower:
+        components = {"Steel (kg)": 1200, "Aluminum (kg)": 400, "Rubber (kg)": 50, "Electronics Unit": 1, "Glass (sq m)": 4}
+        cost = 8500.00
+    else:
+        components = {"Raw Material A (units)": 10, "Component B (units)": 5, "Assembly Screws": 20, "Casing": 1}
+        cost = 150.00
+        
+    new_bom = models.BillOfMaterial(
+        product_name=f"{request.product_name} (Auto-Generated Fallback)",
+        components=json.dumps(components),
+        total_cost=cost
+    )
+    db.add(new_bom)
+    db.commit()
+    return new_bom
 
 @router.post("/boms/manual", response_model=BOMSchema)
-def create_manual_bom(request: ManualBOMRequest, db: Session = Depends(get_db)):
+def create_manual_bom(request: ManualBOMRequest, db: Session = Depends(get_db)) -> models.BillOfMaterial:
     new_bom = models.BillOfMaterial(
         product_name=request.product_name,
         components=request.components,

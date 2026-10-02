@@ -3,6 +3,7 @@ import { Box, Typography, TextField, Button, Card, CardContent } from '@mui/mate
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
+import TsukiFlowLogo from '../components/TsukiFlowLogo';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -44,17 +45,15 @@ export default function Login() {
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      bgcolor: '#0f172a',
+      bgcolor: 'background.default',
       p: 2
     }}>
       <Card sx={{ maxWidth: 400, width: '100%', bgcolor: 'rgba(30, 41, 59, 0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Box 
-              component="img" 
-              src="/tsukiflow-logo.jpg" 
-              alt="TsukiFlow Logo" 
-              sx={{ width: 120, height: 120, borderRadius: 2, mb: 2, objectFit: 'cover' }}
+            <TsukiFlowLogo 
+              className="logo-pulse" 
+              color="#3b82f6" 
             />
             <Typography variant="h4" fontWeight="bold" color="primary.main">
               TsukiFlow

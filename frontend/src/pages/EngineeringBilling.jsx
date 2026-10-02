@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Typography, Box, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, Stepper, Step, StepLabel, TextField, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
-import { AccountTree, Receipt, Schema, AssignmentTurnedIn, AutoFixHigh, Edit, AddBox } from '@mui/icons-material';
-import { useGetBOMsQuery, useGetInvoicesQuery, useGetWorkflowsQuery, useUpdateWorkflowMutation, useGenerateAIBOMMutation, useCreateManualBOMMutation } from '../store/apiSlice';
+import { AccountTree, Receipt, Schema, AssignmentTurnedIn, AutoFixHigh, Edit, AddBox, KeyboardArrowRight } from '@mui/icons-material';
+import { useGetBOMsQuery, useGetInvoicesQuery, useGetWorkflowsQuery, useUpdateWorkflowMutation, useGenerateAIBOMMutation, useCreateManualBOMMutation, useGetMultiLevelBOMsQuery } from '../store/apiSlice';
 
 export default function EngineeringBilling() {
-  const { data: boms = [] } = useGetBOMsQuery();
+  const { data: mlBoms = [] } = useGetMultiLevelBOMsQuery();
   const { data: invoices = [] } = useGetInvoicesQuery();
   const { data: workflows = [] } = useGetWorkflowsQuery();
   const [updateWorkflow] = useUpdateWorkflowMutation();
@@ -114,33 +114,30 @@ export default function EngineeringBilling() {
                   </Button>
                 </Box>
               </Box>
-              
-              <TableContainer component={Box} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Product</TableCell>
-                      <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Components Map</TableCell>
-                      <TableCell align="right" sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>Total Cost</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {boms.map((bom) => (
-                      <TableRow key={bom.id} sx={{ '&:last-child td': { border: 0 } }}>
-                        <TableCell sx={{ color: 'text.primary', borderBottom: '1px solid rgba(255,255,255,0.05)', fontWeight: 'bold' }}>{bom.product_name}</TableCell>
-                        <TableCell sx={{ color: 'text.secondary', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          {Object.entries(JSON.parse(bom.components)).map(([key, val]) => (
-                            <Chip key={key} label={`${key}: ${val}`} size="small" sx={{ mr: 1, mb: 1, bgcolor: 'rgba(255,255,255,0.05)' }} />
-                          ))}
-                        </TableCell>
-                        <TableCell align="right" sx={{ color: 'primary.light', borderBottom: '1px solid rgba(255,255,255,0.05)', fontWeight: 'bold' }}>
-                          ${bom.total_cost.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Box sx={{ mt: 2 }}>
+                {mlBoms.map((parent) => (
+                  <Box key={parent.parent_product_id} sx={{ mb: 3, p: 2, bgcolor: 'rgba(255,255,255,0.02)', borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Typography variant="subtitle1" fontWeight="bold" color="primary.light" gutterBottom>
+                      {parent.parent_product_name}
+                    </Typography>
+                    <Box sx={{ pl: 3, borderLeft: '2px solid rgba(255,255,255,0.1)' }}>
+                      {parent.children.map(child => (
+                        <Box key={child.child_id} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                          <KeyboardArrowRight fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
+                          <Typography variant="body2" sx={{ flexGrow: 1 }}>{child.child_name}</Typography>
+                          <Chip label={`Qty: ${child.quantity_required}`} size="small" variant="outlined" sx={{ mr: 1 }} />
+                          <Chip label={`Stage: ${child.stage}`} size="small" color="secondary" />
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                ))}
+                {mlBoms.length === 0 && (
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 3 }}>
+                    No multi-level BoMs configured.
+                  </Typography>
+                )}
+              </Box>
             </CardContent>
           </Card>
         </Grid>

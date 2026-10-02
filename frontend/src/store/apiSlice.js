@@ -45,6 +45,14 @@ export const apiSlice = createApi({
       query: () => '/machines',
       providesTags: ['Machine'],
     }),
+    logDowntime: builder.mutation({
+      query: (log) => ({
+        url: '/machines/downtime',
+        method: 'POST',
+        body: log,
+      }),
+      invalidatesTags: ['Machine'],
+    }),
     getPOs: builder.query({
       query: () => '/supply/pos',
       providesTags: ['Supply'],
@@ -101,6 +109,37 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Inventory'],
     }),
+    createGRN: builder.mutation({
+      query: (grn) => ({
+        url: '/supply/grns',
+        method: 'POST',
+        body: grn,
+      }),
+      invalidatesTags: ['Supply', 'Inventory'],
+    }),
+    getGRNs: builder.query({
+      query: () => '/supply/grns',
+      providesTags: ['Supply'],
+    }),
+    updateGRNStatus: builder.mutation({
+      query: ({ grn_id, status }) => ({
+        url: `/supply/grns/${grn_id}/status?status=${status}`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Supply'],
+    }),
+    getMultiLevelBOMs: builder.query({
+      query: () => '/engineering/multilevel-boms',
+      providesTags: ['BOM'],
+    }),
+    createWaste: builder.mutation({
+      query: (waste) => ({
+        url: '/supply/waste',
+        method: 'POST',
+        body: waste,
+      }),
+      invalidatesTags: ['Supply'],
+    }),
   }),
 });
 
@@ -112,6 +151,7 @@ export const {
   useGetTasksQuery,
   useAddTaskMutation,
   useGetMachinesQuery,
+  useLogDowntimeMutation,
   useGetPOsQuery,
   useGetWasteLogsQuery,
   useGetBOMsQuery,
@@ -121,5 +161,10 @@ export const {
   useGenerateAIBOMMutation,
   useCreateManualBOMMutation,
   useGetSKUsQuery,
-  useAddSKUMutation
+  useAddSKUMutation,
+  useCreateGRNMutation,
+  useGetGRNsQuery,
+  useUpdateGRNStatusMutation,
+  useGetMultiLevelBOMsQuery,
+  useCreateWasteMutation
 } = apiSlice;
