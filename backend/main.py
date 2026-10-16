@@ -30,7 +30,7 @@ limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:80,http://localhost:3000,http://localhost:5173,https://app.tsukiflow.com")
+cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:80,http://localhost:3000,http://localhost:5173,https://app.tsukiflow.com,https://hybrid-studioz.vercel.app")
 allowed_origins = [origin.strip() for origin in cors_origins_env.split(",")]
 
 app.add_middleware(

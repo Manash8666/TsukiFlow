@@ -1,6 +1,14 @@
 # `TsukiFlow`
 
+[![Live Website](https://img.shields.io/badge/Live_Landing_Page-hybrid--studioz.vercel.app%2Ftsukiflow-FF007A?style=for-the-badge&logo=vercel)](https://hybrid-studioz.vercel.app/tsukiflow)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Manash8666%2FTsukiFlow-181717?style=for-the-badge&logo=github)](https://github.com/Manash8666/TsukiFlow)
+[![Frontend](https://img.shields.io/badge/Frontend-React_19_+_Vite_+_MUI-61DAFB?style=for-the-badge&logo=react)](https://hybrid-studioz.vercel.app/tsukiflow)
+[![Backend](https://img.shields.io/badge/Backend-FastAPI_+_Python-009688?style=for-the-badge&logo=fastapi)](https://github.com/Manash8666/TsukiFlow)
+
 `TsukiFlow` is an enterprise-grade Manufacturing `ERP` tailored specifically for the Indian manufacturing sector (Automotive in Pune/Chennai, Pharmaceuticals in Hyderabad/Gujarat, Textiles in Surat/`Tirupur`, etc.). It acts as the "Missing Middle" connecting high-level `ERP` (like SAP/Oracle) to the shop floor hardware.
+
+> 🌐 **Official Live Landing Page:** [https://hybrid-studioz.vercel.app/tsukiflow](https://hybrid-studioz.vercel.app/tsukiflow)  
+> Explore the interactive architecture, high-efficiency OEE metrics, dynamic workflow demonstrations, and enterprise deployment tiers.
 
 ## Key Features
 

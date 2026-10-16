@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Badge, Chip } from '@mui/material';
-import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal, TouchApp, LocalShipping, Schema } from '@mui/icons-material';
+import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Badge, Chip, Button, Tooltip } from '@mui/material';
+import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal, TouchApp, LocalShipping, Schema, Language as GlobeIcon, GitHub as GitHubIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import TsukiFlowLogo from './TsukiFlowLogo';
 
@@ -64,11 +64,53 @@ export default function Layout({ children }) {
           );
         })}
       </List>
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)', textAlign: 'center' }}>
+      <Box sx={{ p: 3, pt: 1 }}>
+        <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)', textAlign: 'center', mb: 2 }}>
           <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>Plant Capacity</Typography>
           <Typography variant="h6" color="primary.main" fontWeight="bold" sx={{ mb: 1 }}>84% Used</Typography>
           <Chip label="Optimal" size="small" sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 'bold' }} />
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<GlobeIcon fontSize="small" />}
+            href="https://hybrid-studioz.vercel.app/tsukiflow"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              fontSize: '0.72rem',
+              py: 0.5,
+              px: 1.2,
+              borderRadius: 2,
+              borderColor: 'rgba(255,255,255,0.1)',
+              color: 'text.secondary',
+              textTransform: 'none',
+              '&:hover': { borderColor: 'primary.main', color: '#f8fafc', bgcolor: 'rgba(59, 130, 246, 0.1)' }
+            }}
+          >
+            Website
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<GitHubIcon fontSize="small" />}
+            href="https://github.com/Manash8666/TsukiFlow"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              fontSize: '0.72rem',
+              py: 0.5,
+              px: 1.2,
+              borderRadius: 2,
+              borderColor: 'rgba(255,255,255,0.1)',
+              color: 'text.secondary',
+              textTransform: 'none',
+              '&:hover': { borderColor: 'primary.main', color: '#f8fafc', bgcolor: 'rgba(59, 130, 246, 0.1)' }
+            }}
+          >
+            GitHub
+          </Button>
         </Box>
       </Box>
     </Box>
@@ -86,7 +128,29 @@ export default function Layout({ children }) {
               {menuItems.find(item => item.path === location.pathname)?.text || 'TsukiFlow'}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Tooltip title="View Live Landing Page (hybrid-studioz.vercel.app/tsukiflow)">
+              <IconButton
+                component="a"
+                href="https://hybrid-studioz.vercel.app/tsukiflow"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ color: 'text.secondary', '&:hover': { color: '#3b82f6', bgcolor: 'rgba(59,130,246,0.1)' } }}
+              >
+                <GlobeIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="View Source on GitHub">
+              <IconButton
+                component="a"
+                href="https://github.com/Manash8666/TsukiFlow"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ color: 'text.secondary', '&:hover': { color: '#f8fafc', bgcolor: 'rgba(255,255,255,0.05)' } }}
+              >
+                <GitHubIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <IconButton sx={{ color: 'text.secondary', '&:hover': { color: '#f8fafc' } }}>
               <Badge badgeContent={3} color="secondary">
                 <NotificationsIcon />
