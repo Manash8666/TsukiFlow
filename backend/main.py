@@ -152,8 +152,21 @@ async def generate_insights(request_body: AIRequest, request: Request, db: Sessi
     downtime = db.query(models.DowntimeLog).all()
     waste = db.query(models.WasteLog).all()
     grns = db.query(models.GRN).all()
+    query_ctx = request_body.context.lower()
     memories = db.query(models.YuzuMemory).all()
-    memory_context = "\n".join([f"- {m.fact}" for m in memories]) if memories else ""
+    corpus_matches = []
+    for m in memories:
+        if m.entry:
+            # Check for relevant keyword queries or default core citations
+            if any(w in query_ctx for w in ["corpus", "decision", "rule", "invariant", "conservation", "costing", "lot", "scrap", "mrp", "jwo", "pretture", "prêtture", "golden", "oath"]):
+                if any(k in m.entry.lower() for k in ["conservation", "invariant", "unit_cost", "shortfall", "golden", "video-2", "issued", "consumed"]):
+                    corpus_matches.append(f"[{m.question} | {m.provenance}]: {m.entry.splitlines()[1] if len(m.entry.splitlines()) > 1 else m.entry}")
+            elif m.question in ["Q1", "Q8", "Q9", "Q36", "Q78"]:
+                corpus_matches.append(f"[{m.question} | {m.provenance}]: {m.entry.splitlines()[1] if len(m.entry.splitlines()) > 1 else m.entry}")
+        elif m.fact:
+            corpus_matches.append(f"- {m.fact}")
+    
+    memory_context = "\n".join(corpus_matches[:4])
 
     context_data = {
         'in_progress': [p for p in plans if p.status == "In Progress"],

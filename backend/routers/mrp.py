@@ -307,6 +307,108 @@ def generate_shortfall_pos(req: schemas.GenerateShortfallPOsRequest, db: Session
     }
 
 
+# Appendix B Command: POST /mrp/check (Q36)
+@router.post("/check", response_model=schemas.MRPExplosionResponse)
+def mrp_check_alias(request: schemas.MRPExplosionRequest, db: Session = Depends(get_db)):
+    """
+    Q36: What is the MRP equation?
+    shortfall = gross_req(order_qty * per-unit explosion) - on_hand - expected_on_open_PO - scrap_bank_available.
+    """
+    return explode_mrp(request, db)
+
+
+# Appendix B Command: POST /orders/{id}/start-production (Q40)
+@router.post("/orders/{order_id}/start-production")
+def start_production(order_id: int, override_reason: Optional[str] = None, db: Session = Depends(get_db)):
+    """
+    Q40: What gates the release of production?
+    The Start Production command: validates netted shortfall = 0 (or a reasoned override),
+    then seeds JWO 1 at the starting process with its default processor;
+    the order wears a 'Production Started' chip.
+    """
+    process_order = db.query(models.ManufacturingProcess).filter(models.ManufacturingProcess.id == order_id).first()
+    if not process_order:
+        raise HTTPException(status_code=404, detail="Manufacturing Process Order not found")
+
+    # Explode MRP check to ensure shortfall is 0 unless override provided
+    mrp_req = schemas.MRPExplosionRequest(
+        product_id=process_order.product_id,
+        order_quantity=float(process_order.quantity)
+    )
+    explosion = explode_mrp(mrp_req, db)
+
+    shortfall_items = [s for s in explosion.shortfalls if s.shortfall_qty > 0]
+    if shortfall_items and not override_reason:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Cannot release production order #{order_id}! "
+                f"There is an active material shortfall on {len(shortfall_items)} items. "
+                f"Provide a valid override_reason to force release."
+            )
+        )
+
+    # Find starting stage from Process-Routing BoM
+    routing_bom = db.query(models.RoutingBoM).filter(
+        models.RoutingBoM.product_id == process_order.product_id,
+        models.RoutingBoM.is_active == True
+    ).first()
+
+    starting_stage = None
+    if routing_bom and routing_bom.stages:
+        starting_stage = sorted(routing_bom.stages, key=lambda s: s.stage_order)[0]
+
+    # Seed JWO 1 at starting stage
+    timestamp_str = datetime.now(timezone.utc).strftime("%y%m%d%H%M")
+    stage_name = starting_stage.stage_name if starting_stage else "Stage 1 - Initial Prep"
+    proc_name = starting_stage.default_vendor_name if (starting_stage and starting_stage.default_vendor_name) else "Shop Floor Primary Cell"
+    proc_type = starting_stage.work_mode if starting_stage else "CAPTIVE"
+
+    jwo_number = f"JWO-REL-{timestamp_str}-1"
+    new_jwo = models.JobWorkOrder(
+        jwo_number=jwo_number,
+        target_product_id=process_order.product_id,
+        stage_name=stage_name,
+        processor_name=proc_name,
+        processor_type=proc_type,
+        work_mode=proc_type,
+        issued_quantity=float(process_order.quantity),
+        status="IN_PROGRESS",
+        created_at=datetime.now(timezone.utc)
+    )
+    db.add(new_jwo)
+    db.flush()
+
+    # Record ProductionRelease
+    release_rec = models.ProductionRelease(
+        order_id=process_order.id,
+        jwo_id=new_jwo.id,
+        override_reason=override_reason,
+        released_at=datetime.now(timezone.utc),
+        status="PRODUCTION_STARTED"
+    )
+    db.add(release_rec)
+
+    # Update ManufacturingProcess order status to 'Production Started'
+    process_order.status = "Production Started"
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": "Production Started successfully. JWO 1 seeded at starting process.",
+        "order_id": process_order.id,
+        "order_status": process_order.status,
+        "seeded_jwo": {
+            "id": new_jwo.id,
+            "jwo_number": new_jwo.jwo_number,
+            "stage_name": new_jwo.stage_name,
+            "processor": new_jwo.processor_name,
+            "issued_quantity": new_jwo.issued_quantity
+        },
+        "override_applied": bool(override_reason)
+    }
+
+
 # ==============================================================================
 # 3. JOB WORK ORDERS (JWOs - Captive & Subcontract)
 # ==============================================================================

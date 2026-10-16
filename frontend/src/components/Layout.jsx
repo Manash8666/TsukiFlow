@@ -113,6 +113,21 @@ export default function Layout({ children }) {
             GitHub
           </Button>
         </Box>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'text.secondary',
+            opacity: 0.65,
+            fontSize: '0.68rem',
+            display: 'block',
+            textAlign: 'center',
+            mt: 1.5,
+            letterSpacing: 0.5,
+            fontWeight: 500,
+          }}
+        >
+          Lineage: Prêtture &bull; v1 ratified
+        </Typography>
       </Box>
     </Box>
   );

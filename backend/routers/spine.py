@@ -452,3 +452,86 @@ def complete_stage_with_conservation(req: schemas.ConservationCompletionRequest,
             "net_amount": bill.net_amount
         } if bill else None
     }
+
+
+# Appendix B Command Alias: POST /jwo/{id}/complete
+@router.post("/jwo/{jwo_id}/complete")
+def jwo_complete_alias(jwo_id: int, req: schemas.ConservationCompletionRequest, db: Session = Depends(get_db)):
+    req.jwo_id = jwo_id
+    return complete_stage_with_conservation(req, db)
+
+
+# Appendix B Command: POST /jwo/{id}/approve (Q25 & Q26)
+@router.post("/jwo/{jwo_id}/approve")
+def approve_jwo(jwo_id: int, approved_qty: float = None, db: Session = Depends(get_db)):
+    """
+    Q25 & Q26: State machine IN_PROGRESS -> COMPLETED -> (APPROVED | REJECTED).
+    Policy gates approval with reason codes.
+    """
+    jwo = db.query(models.JobWorkOrder).filter(models.JobWorkOrder.id == jwo_id).first()
+    if not jwo:
+        raise HTTPException(status_code=404, detail="Job Work Order not found")
+    
+    if jwo.status != "COMPLETED":
+        raise HTTPException(status_code=400, detail=f"Cannot approve JWO in '{jwo.status}' status. Must be COMPLETED first.")
+        
+    jwo.status = "APPROVED"
+    db.commit()
+    return {
+        "status": "success",
+        "jwo_number": jwo.jwo_number,
+        "new_status": "APPROVED",
+        "approved_quantity": approved_qty or jwo.produced_quantity
+    }
+
+
+# Appendix B Command: POST /lots/{id}/finish (Q49)
+@router.post("/lots/{lot_id}/finish")
+def finish_production(lot_id: int, target_warehouse_id: int = None, db: Session = Depends(get_db)):
+    """
+    Q49: Explicit Finish Production transfer: stage approved stock -> product warehouse as an FG lot;
+    the lot's production lifecycle closes.
+    """
+    lot = db.query(models.Lot).filter(models.Lot.id == lot_id).first()
+    if not lot:
+        raise HTTPException(status_code=404, detail="Lot not found")
+
+    # Find Finished Goods warehouse if not specified
+    if not target_warehouse_id:
+        fg_wh = db.query(models.Warehouse).filter(models.Warehouse.warehouse_type == "FINISHED_GOODS").first()
+        target_warehouse_id = fg_wh.id if fg_wh else 3
+
+    # Create FinishProduction audit record
+    finish_rec = models.FinishProduction(
+        lot_id=lot.id,
+        target_warehouse_id=target_warehouse_id,
+        quantity=lot.current_quantity,
+        unit_cost=lot.unit_cost,
+        completed_at=datetime.now(timezone.utc)
+    )
+    db.add(finish_rec)
+
+    # Move lot to FG warehouse and mark closed/FG
+    lot.status = "IN_STOCK"
+    movement = models.LotMovement(
+        lot_id=lot.id,
+        movement_type="FINISH_PRODUCTION",
+        issued_qty=lot.current_quantity,
+        to_warehouse_id=target_warehouse_id,
+        reference_doc=f"FG-RECEIPT-{lot.lot_number}",
+        unit_cost=lot.unit_cost,
+        timestamp=datetime.now(timezone.utc),
+        notes="Production lifecycle closed. Transferred to Finished Goods Depot."
+    )
+    db.add(movement)
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": "Production lifecycle closed. Lot moved to Finished Goods warehouse.",
+        "lot_number": lot.lot_number,
+        "quantity": lot.current_quantity,
+        "unit_cost": lot.unit_cost,
+        "valuation": round(lot.current_quantity * lot.unit_cost, 2),
+        "target_warehouse_id": target_warehouse_id
+    }

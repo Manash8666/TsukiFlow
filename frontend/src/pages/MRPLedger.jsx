@@ -62,6 +62,7 @@ import {
   useGetMISReportsQuery,
   useGetInventoryQuery,
 } from '../store/apiSlice';
+import ConservationBar from '../components/ConservationBar';
 
 export default function MRPLedger() {
   const [activeTab, setActiveTab] = useState(0);
@@ -774,6 +775,24 @@ export default function MRPLedger() {
                   <Typography variant="caption" color="text.secondary">
                     Captive & Subcontract Work Orders. Completion enforces physical conservation law.
                   </Typography>
+                </Box>
+
+                {/* Q58 Conservation Bar Component */}
+                <Box sx={{ mb: 2.5, p: 2, bgcolor: 'rgba(15, 23, 42, 0.5)', borderRadius: 2, border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <ConservationBar
+                    issued={jwos.reduce((a, b) => a + (b.issued_quantity || 0), 0)}
+                    underProduction={Math.max(
+                      0,
+                      jwos.reduce((a, b) => a + (b.issued_quantity || 0), 0) -
+                        jwos.reduce((a, b) => a + (b.consumed_quantity || 0), 0) -
+                        jwos.reduce((a, b) => a + (b.wastage_quantity || 0), 0) -
+                        jwos.reduce((a, b) => a + (b.surplus_quantity || 0), 0)
+                    )}
+                    approved={jwos.reduce((a, b) => a + (b.consumed_quantity || 0), 0)}
+                    surplus={jwos.reduce((a, b) => a + (b.surplus_quantity || 0), 0)}
+                    wastage={jwos.reduce((a, b) => a + (b.wastage_quantity || 0), 0)}
+                    uom="units"
+                  />
                 </Box>
 
                 <TableContainer component={Paper} sx={{ bgcolor: 'rgba(15, 23, 42, 0.6)', borderRadius: 2 }}>

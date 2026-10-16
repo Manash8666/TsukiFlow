@@ -81,10 +81,22 @@ class Task(Base):
     assigned_user = relationship("User", back_populates="tasks")
 
 class YuzuMemory(Base):
+    """
+    Q6 & Q68: Machine-readable specification memory holding corpus decisions,
+    lineage provenance, facts, and ADR citations for RAG.
+    """
     __tablename__ = "yuzu_memory"
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, index=True)
-    fact = Column(Text, index=True)
-    timestamp = Column(DateTime(timezone=True))
+    tenant_id = Column(String(50), default="default", index=True)
+    part = Column(String(50), nullable=True, index=True)
+    question = Column(String(20), nullable=True, index=True)
+    entry = Column(Text, nullable=True)
+    fact = Column(Text, nullable=True, index=True)
+    provenance = Column(String(255), nullable=True)
+    embedding = Column(Text, nullable=True)
+    timestamp = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 class Machine(Base):
     __tablename__ = "machines"
@@ -191,12 +203,14 @@ class Lot(Base):
     initial_quantity = Column(Float, default=0.0)
     current_quantity = Column(Float, default=0.0)
     unit_cost = Column(Float, default=0.0)
+    warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=True)
     status = Column(String(50), default="IN_STOCK")  # IN_STOCK, IN_PROCESS, EXHAUSTED, QUARANTINE
     barcode = Column(String(100), unique=True, nullable=True)
     created_at = Column(DateTime(timezone=True))
 
     product = relationship("Product", foreign_keys=[product_id])
     sku = relationship("SKU", foreign_keys=[sku_id])
+    warehouse = relationship("Warehouse", foreign_keys=[warehouse_id])
     parent_lot = relationship("Lot", remote_side=[id], backref="child_lots")
 
 
@@ -323,4 +337,45 @@ class ProcessorBill(Base):
     due_amount = Column(Float, default=0.0)
     status = Column(String(50), default="UNPAID")  # UNPAID, PARTIALLY_PAID, PAID
     created_at = Column(DateTime(timezone=True))
+
+
+class YuzuProposal(Base):
+    """
+    Q66: LLMs never write directly to ledger; they draft proposals
+    with human-in-the-loop review.
+    """
+    __tablename__ = "yuzu_proposals"
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(String(50), default="default", index=True)
+    kind = Column(String(50), nullable=False)  # BOM_DRAFT, REASON_CODE, PO_SHORTFALL
+    payload = Column(Text, nullable=False)
+    status = Column(String(20), default="proposed")  # proposed, accepted, dismissed
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class ProductionRelease(Base):
+    """
+    Q40: Start Production command: validates netted shortfall = 0,
+    then seeds JWO 1 at starting process with default processor.
+    """
+    __tablename__ = "production_releases"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("manufacturing_processes.id"), nullable=False)
+    jwo_id = Column(Integer, ForeignKey("job_work_orders.id"), nullable=True)
+    override_reason = Column(String(255), nullable=True)
+    released_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    status = Column(String(50), default="RELEASED")
+
+
+class FinishProduction(Base):
+    """
+    Q49: Finish Production transfer: stage approved stock -> product warehouse as an FG lot.
+    """
+    __tablename__ = "finish_productions"
+    id = Column(Integer, primary_key=True, index=True)
+    lot_id = Column(Integer, ForeignKey("lots.id"), nullable=False)
+    target_warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
+    quantity = Column(Float, nullable=False)
+    unit_cost = Column(Float, nullable=False)
+    completed_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 

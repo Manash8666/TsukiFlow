@@ -7,6 +7,23 @@
 [![Backend Stack](https://img.shields.io/badge/Backend-FastAPI_+_Python_3.11-009688?style=for-the-badge&logo=fastapi)](https://github.com/Manash8666/TsukiFlow)
 [![Database](https://img.shields.io/badge/Database-PostgreSQL_%7C_SQLite-4169E1?style=for-the-badge&logo=postgresql)](https://github.com/Manash8666/TsukiFlow)
 [![Security Audited](https://img.shields.io/badge/CodeRabbit-QA_Audited-FF5722?style=for-the-badge&logo=security)](https://github.com/Manash8666/TsukiFlow)
+---
+
+## §0 The Founder's Oath & Ratified Decision Corpus
+
+> **Lineage:** Prêtture (2021–22) ➔ TsukiFlow (v1).  
+> **Status:** Ratified by the founder's word — *"The advanced and future-ready version of Prêtture."*  
+> **North-Star:** TsukiFlow is Prêtture's successor — the same conservation-ledger laws, rebuilt as an AI-native, config-driven manufacturing spine with modern surfaces.  
+> **Full Governing Specification:** See [`docs/DECISION_CORPUS.md`](docs/DECISION_CORPUS.md) (86 Ratified Decisions across 10 Parts, Appendices A–C, and Closing Register).
+
+### The Four Reserved Decisions (Ratified)
+
+| Reserved Question | Ratified Policy |
+| :-- | :-- |
+| **First Paying Segment** | Job-work garment & discrete fabricator shops already living on Prêtture — they recognize the laws instantly. |
+| **Pricing Metric** | Per lot processed per month, not per user: the ledger, not the seat, is the product. |
+| **First Hire** | A backend ledger engineer who finds joy in constraints; UI can borrow, the conservation law cannot. |
+| **Brand** | Keep **TsukiFlow** outward, print **"Lineage: Prêtture"** in the footer inward — successors honor their ancestors publicly. |
 
 ---
 

@@ -1,0 +1,26 @@
+{
+  "title": "Video-2 Chain Golden Fixture",
+  "citation": "Decision Corpus v1 \u00a7Q78",
+  "input_fabric_meters": 500.0,
+  "lots_split": [
+    "LOT-201 (400M)",
+    "LOT-202 (100M)"
+  ],
+  "finished_goods_units": 300,
+  "progressive_chain_unit_costs": [
+    330.0,
+    380.0,
+    510.0,
+    540.0,
+    590.0
+  ],
+  "total_fg_valuation": 177000.0,
+  "periodic_costing_decomposition": {
+    "consumption_cost": 95000.0,
+    "absorbed_wastage_cost": 10000.0,
+    "process_cost": 72000.0,
+    "formula": "95k (consumption) + 10k (wastage) + 72k (process) = 1,77,000 total"
+  },
+  "cycle_time_minutes": 7.0,
+  "verified_at": "2026-10-16T10:21:39.447823+00:00"
+}
