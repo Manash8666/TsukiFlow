@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Typography, Box, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, Stepper, Step, StepLabel, TextField, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
 import { AccountTree, Receipt, Schema, AssignmentTurnedIn, AutoFixHigh, Edit, AddBox, KeyboardArrowRight } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useGetInvoicesQuery, useGetWorkflowsQuery, useUpdateWorkflowMutation, useGenerateAIBOMMutation, useCreateManualBOMMutation, useGetMultiLevelBOMsQuery } from '../store/apiSlice';
 
 export default function EngineeringBilling() {
+  const navigate = useNavigate();
   const { data: mlBoms = [] } = useGetMultiLevelBOMsQuery();
   const { data: invoices = [] } = useGetInvoicesQuery();
   const { data: workflows = [] } = useGetWorkflowsQuery();
@@ -64,6 +66,15 @@ export default function EngineeringBilling() {
           <Typography variant="h4" fontWeight="bold" gutterBottom>Engineering & Finance</Typography>
           <Typography variant="body1" color="text.secondary">Bill of Materials (BoM), Routing Stages, SoWs, and Invoicing.</Typography>
         </Box>
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<AccountTree />}
+          onClick={() => navigate('/mrp-ledger')}
+          sx={{ textTransform: 'none', borderRadius: 2 }}
+        >
+          View Process-Routing BoMs & Actual Costing
+        </Button>
       </Box>
 
       {/* Manufacturing Routing Pipeline */}

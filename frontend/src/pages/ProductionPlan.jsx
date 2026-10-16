@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Typography, Box, Card, CardContent, Button, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress } from '@mui/material';
-import { Add as AddIcon, AutoAwesome as SparklesIcon } from '@mui/icons-material';
+import { Add as AddIcon, AutoAwesome as SparklesIcon, Calculate as CalculateIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useGetPlansQuery, useAddPlanMutation } from '../store/apiSlice';
 import PlanForm from '../components/forms/PlanForm';
 
 export default function ProductionPlan() {
+  const navigate = useNavigate();
   const { data: plans, isLoading, error } = useGetPlansQuery();
   const [addPlan] = useAddPlanMutation();
   const [aiInsight, setAiInsight] = useState('');
@@ -34,9 +36,21 @@ export default function ProductionPlan() {
         <Typography variant="h4" fontWeight="bold">
           Production Plans
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} color="primary" size="large" onClick={() => setIsFormOpen(true)}>
-          New Plan
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Button
+            variant="outlined"
+            startIcon={<CalculateIcon />}
+            color="primary"
+            size="large"
+            onClick={() => navigate('/mrp-ledger')}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
+          >
+            Launch MRP Shortfall Engine
+          </Button>
+          <Button variant="contained" startIcon={<AddIcon />} color="primary" size="large" onClick={() => setIsFormOpen(true)}>
+            New Plan
+          </Button>
+        </Box>
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>

@@ -17,7 +17,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from database import engine, Base, get_db
-from routers import plans, inventory, tasks, auth, machines, supply, engineering
+from routers import plans, inventory, tasks, auth, machines, supply, engineering, spine, mrp
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
@@ -48,6 +48,8 @@ app.include_router(auth.router)
 app.include_router(machines.router)
 app.include_router(supply.router)
 app.include_router(engineering.router)
+app.include_router(spine.router)
+app.include_router(mrp.router)
 
 class AIRequest(BaseModel):
     context: str

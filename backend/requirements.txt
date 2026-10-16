@@ -8,3 +8,4 @@ python-jose[cryptography]
 httpx
 psycopg2-binary
 slowapi
+python-multipart

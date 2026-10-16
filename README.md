@@ -294,7 +294,88 @@ VITE_API_BASE_URL=http://localhost:8000/api
 
 ---
 
+## 🏛️ The Eight Missing Systems (Core Spine Architecture)
+
+TsukiFlow implements the foundational architectural spine required for zero-fiction, audit-grade discrete and process manufacturing. Without this spine, inventory costing is an estimate, scrap is an unaccounted leak, and subcontracting is a blind spot.
+
+```
+[Routing BoM] ➔ [MRP Explosion] ➔ [PO / GRN + Lot Splits] ➔ [JWO + Conservation] ➔ [Actual Costing] ➔ [JRN / AP] ➔ [MIS]
+       └──────────────────────── The Financial Lot Ledger is the Constitutional Spine ────────────────────────┘
+```
+
+### The Architectural Matrix
+
+| # | System | Prior MES State | The Eight Systems Core Delta |
+| :-- | :-- | :-- | :-- |
+| 1 | **MRP Explosion Engine** | Reactive `< 200 units` threshold alerts | Order-driven `Req − Avl − OnPO` shortfall computation; one-click shortfall ➔ PO minting |
+| 2 | **Process-Routing BoM** | Static parts-tree + isolated JSON pipeline | Stages declare consumable inputs & intermediate produced outputs with scrap factors |
+| 3 | **JWO Execution Ledger** | Status pipeline with captive-only assumptions | Unified per-stage Work Order engine supporting **Captive** (shop floor cells) and **Subcontract** (outside processors) |
+| 4 | **Lot Ledger & Conservation** | QA genealogy tags; scrap as dead-end waste | First-class financial entity with Barcode, Lineage (`NEW`, `SPLIT`, `DERIVED`); **Physical Conservation Invariant**; recoverable surplus |
+| 5 | **Multi-Warehouse Custody** | Single inventory pool; no physical stores | Segregated storage: `WH-RM` (Raw Store), `WH-WIP` (Shop Floor), `WH-FG` (Finished Goods), `WH-SUB` (Vendor Custody) |
+| 6 | **Progressive Actual Costing** | Static BoM standard cost estimates | Realized costs rolled per stage DAG; scrap cost *absorbed* into good output unit rate ($Cost = TotalIncurred \div GoodOutput$) |
+| 7 | **Accounts Payable & Settlement** | Sales-side client invoices only | Complete AP ledger: Job Receipt Notes (JRN), service vs goods bills, partial dues payments across 5 banking modes |
+| 8 | **MIS & Statutory Reporting** | Generic PDF downloads | GSTR-2B Input Tax Credit (ITC) Purchase Register, Job Work Analysis, Rolled Cost Matrix, Aging Dues, 1-Click CSV export |
+
+---
+
+### The Fundamental Conservation Invariant Law
+
+In TsukiFlow, matter cannot appear from nowhere or vanish without a financial trace. Every Job Work Order completion strictly enforces the mathematical identity:
+
+$$\mathbf{Issued \equiv Consumed + Wastage + Surplus}$$
+
+```
+                ┌─────────────────────────┐
+                │   Issued Lot (500 kg)   │
+                └────────────┬────────────┘
+                             │
+     ┌───────────────────────┼───────────────────────┐
+     ▼                       ▼                       ▼
+┌──────────────┐      ┌──────────────┐      ┌─────────────────────────┐
+│ Consumed Qty │      │ Wastage Qty  │      │ Surplus Recoverable     │
+│   (400 kg)   │      │   (50 kg)    │      │ (50 kg - Stored in RM)  │
+└──────┬───────┘      └──────┬───────┘      └─────────────────────────┘
+       │                     │
+       └─────────┬───────────┘
+                 ▼
+ ┌────────────────────────────────┐
+ │ Output Unit Cost Absorbs Scrap │
+ │  ₹(Materials + Scrap + Labor)  │
+ └────────────────────────────────┘
+```
+
+1. **Consumed (Good Output):** Transforms into a new **Derived Lot** (`lineage_type: DERIVED`) with its own unique barcode and rolled unit cost.
+2. **Wastage (Scrap):** Its financial value is absorbed into the unit cost of good output, ensuring realistic COGS.
+3. **Surplus (Leftover Material):** **Surplus is never treated as waste.** It is automatically minted as an active inventory lot and returned to `WH-RM` for future order allocation.
+4. **Invariant Rejection:** Any completion where $Issued \neq Consumed + Wastage + Surplus$ is rejected by the backend with HTTP 400 and a precise discrepancy calculation.
+
+---
+
 ## 📡 REST API Reference
+
+### 1. The Eight Missing Systems (Spine & MRP)
+
+| Domain | Method | Endpoint | Description |
+| :--- | :--- | :--- | :--- |
+| **Spine** | `GET` | `/api/spine/warehouses` | Fetch all physical warehouses (`RAW_MATERIAL`, `WIP_FLOOR`, `FINISHED_GOODS`, `SUBCONTRACT_CUSTODY`) |
+| **Spine** | `POST` | `/api/spine/warehouses` | Register a new warehouse location |
+| **Spine** | `GET` | `/api/spine/lots` | Retrieve real-time financial lot ledger with balances, unit costs, barcodes |
+| **Spine** | `POST` | `/api/spine/lots` | Mint a new parent lot (`lineage_type: NEW`) at Goods Receipt |
+| **Spine** | `POST` | `/api/spine/lots/{lot_id}/split` | Split a lot into child lineage lots (`lineage_type: SPLIT`) with barcode generation |
+| **Spine** | `GET` | `/api/spine/stage-stocks` | Query stock balances currently under processor or shop-floor stage custody |
+| **Spine** | `GET` | `/api/spine/movements` | Audit double-entry inventory movement ledger |
+| **Spine** | `POST` | `/api/spine/jwo/{id}/complete-stage` | **Complete JWO stage**: verifies Conservation Invariant, absorbs scrap, mints output lot, recovers surplus, generates JRN bill |
+| **MRP** | `GET` | `/api/mrp/routing-boms` | Fetch multi-stage Process-Routing BoMs declaring stage inputs and outputs |
+| **MRP** | `POST` | `/api/mrp/routing-boms` | Create or update a Process-Routing BoM specification |
+| **MRP** | `POST` | `/api/mrp/explode` | **MRP Explosion Engine**: calculates net shortfall: $Req - Avl - OnPO = Shortfall$ |
+| **MRP** | `POST` | `/api/mrp/generate-shortfall-pos` | **1-Click Shortfall ➔ PO**: inherits identified shortfalls directly into vendor POs |
+| **MRP** | `GET` | `/api/mrp/jwos` | Fetch Job Work Orders across captive lines and subcontract processors |
+| **MRP** | `POST` | `/api/mrp/jwos` | Issue a new stage Job Work Order with material custody issue |
+| **MRP** | `GET` | `/api/mrp/bills` | Fetch Accounts Payable dues ledger (JRN service bills & goods bills) |
+| **MRP** | `POST` | `/api/mrp/bills/pay` | Record partial or full AP settlement across 5 payment modes (NEFT, RTGS, UPI, etc.) |
+| **MRP** | `GET` | `/api/mrp/reports/mis` | Statutory MIS Catalog: GSTR-2B ITC Register, Job Work Analysis, Costing Matrix, Aging Dues |
+
+### 2. Manufacturing & Shop-Floor Telemetry
 
 | Domain | Method | Endpoint | Description |
 | :--- | :--- | :--- | :--- |

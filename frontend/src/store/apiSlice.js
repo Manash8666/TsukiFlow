@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
-  tagTypes: ['Plan', 'Inventory', 'Task'],
+  tagTypes: ['Plan', 'Inventory', 'Task', 'Machine', 'Supply', 'Engineering', 'Finance', 'Workflow', 'BOM', 'Spine', 'Lot', 'JWO', 'RoutingBoM'],
   endpoints: (builder) => ({
     getPlans: builder.query({
       query: () => '/plans',
@@ -142,6 +142,80 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Supply'],
     }),
+    // ==========================================
+    // THE EIGHT MISSING SYSTEMS (SPINE & MRP)
+    // ==========================================
+    getWarehouses: builder.query({
+      query: () => '/spine/warehouses',
+      providesTags: ['Spine'],
+    }),
+    getLots: builder.query({
+      query: () => '/spine/lots',
+      providesTags: ['Lot'],
+    }),
+    splitLot: builder.mutation({
+      query: ({ lot_id, ...body }) => ({
+        url: `/spine/lots/${lot_id}/split`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Lot', 'Spine'],
+    }),
+    getStageStocks: builder.query({
+      query: () => '/spine/stage-stocks',
+      providesTags: ['Spine'],
+    }),
+    getLotMovements: builder.query({
+      query: () => '/spine/movements',
+      providesTags: ['Spine'],
+    }),
+    completeStageWithConservation: builder.mutation({
+      query: ({ jwo_id, ...body }) => ({
+        url: `/spine/jwo/${jwo_id}/complete-stage`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Lot', 'JWO', 'Spine', 'Finance'],
+    }),
+    getRoutingBoMs: builder.query({
+      query: () => '/mrp/routing-boms',
+      providesTags: ['RoutingBoM'],
+    }),
+    explodeMRP: builder.mutation({
+      query: (body) => ({
+        url: '/mrp/explode',
+        method: 'POST',
+        body,
+      }),
+    }),
+    generateShortfallPOs: builder.mutation({
+      query: (body) => ({
+        url: '/mrp/generate-shortfall-pos',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Supply', 'Plan'],
+    }),
+    getJWOs: builder.query({
+      query: () => '/mrp/jwos',
+      providesTags: ['JWO'],
+    }),
+    getProcessorBills: builder.query({
+      query: () => '/mrp/bills',
+      providesTags: ['Finance'],
+    }),
+    payProcessorBill: builder.mutation({
+      query: (body) => ({
+        url: '/mrp/bills/pay',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Finance'],
+    }),
+    getMISReports: builder.query({
+      query: () => '/mrp/reports/mis',
+      providesTags: ['Finance', 'JWO', 'Lot', 'Spine'],
+    }),
   }),
 });
 
@@ -168,5 +242,19 @@ export const {
   useGetGRNsQuery,
   useUpdateGRNStatusMutation,
   useGetMultiLevelBOMsQuery,
-  useCreateWasteMutation
+  useCreateWasteMutation,
+  // The Eight Systems Hooks
+  useGetWarehousesQuery,
+  useGetLotsQuery,
+  useSplitLotMutation,
+  useGetStageStocksQuery,
+  useGetLotMovementsQuery,
+  useCompleteStageWithConservationMutation,
+  useGetRoutingBoMsQuery,
+  useExplodeMRPMutation,
+  useGenerateShortfallPOsMutation,
+  useGetJWOsQuery,
+  useGetProcessorBillsQuery,
+  usePayProcessorBillMutation,
+  useGetMISReportsQuery,
 } = apiSlice;

@@ -88,7 +88,7 @@ def read_multilevel_boms(db: Session = Depends(get_db)) -> list:
     return list(grouped.values())
 
 @router.get("/invoices", response_model=List[InvoiceSchema])
-def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[models.Invoice]:
+def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     if db.query(models.Invoice).count() == 0:
         db.add(models.Invoice(client_name="Tata Motors", amount=150000.00, status="Paid", sow_reference="SOW-TM-2026-A1"))
         db.add(models.Invoice(client_name="Mahindra Aerospace", amount=85000.00, status="Unpaid", sow_reference="SOW-MA-2026-B9"))
@@ -96,21 +96,21 @@ def read_invoices(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
     return db.query(models.Invoice).offset(skip).limit(limit).all()
 
 @router.get("/workflows", response_model=List[WorkflowSchema])
-def read_workflows(db: Session = Depends(get_db)) -> List[models.CustomWorkflow]:
+def read_workflows(db: Session = Depends(get_db)):
     if db.query(models.CustomWorkflow).count() == 0:
         db.add(models.CustomWorkflow(name="Default Workflow", stages=json.dumps(['Procurement', 'Milling', 'Assembly', 'QA', 'Storage'])))
         db.commit()
     return db.query(models.CustomWorkflow).all()
 
-@router.post("/workflows")
-def update_workflow(workflow: dict, db: Session = Depends(get_db)) -> models.CustomWorkflow:
+@router.post("/workflows", response_model=WorkflowSchema)
+def update_workflow(workflow: dict, db: Session = Depends(get_db)):
     wf = db.query(models.CustomWorkflow).first()
     wf.stages = json.dumps(workflow.get("stages", []))
     db.commit()
     return wf
 
-@router.post("/boms/generate")
-async def generate_ai_bom(request: GenerateBOMRequest, db: Session = Depends(get_db)) -> models.BillOfMaterial:
+@router.post("/boms/generate", response_model=BOMSchema)
+async def generate_ai_bom(request: GenerateBOMRequest, db: Session = Depends(get_db)):
     api_key = os.getenv("OPENAI_API_KEY") or os.getenv("AGENT_ROUTER_API_KEY")
     api_base = os.getenv("YUZU_API_BASE", "https://api.openai.com/v1")
     
@@ -177,7 +177,7 @@ async def generate_ai_bom(request: GenerateBOMRequest, db: Session = Depends(get
     return new_bom
 
 @router.post("/boms/manual", response_model=BOMSchema)
-def create_manual_bom(request: ManualBOMRequest, db: Session = Depends(get_db)) -> models.BillOfMaterial:
+def create_manual_bom(request: ManualBOMRequest, db: Session = Depends(get_db)):
     new_bom = models.BillOfMaterial(
         product_name=request.product_name,
         components=request.components,

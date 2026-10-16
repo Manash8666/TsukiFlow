@@ -13,6 +13,7 @@ import ReportsAnalytics from './pages/ReportsAnalytics';
 import SystemDiagnostics from './pages/SystemDiagnostics';
 import WorkerKiosk from './pages/WorkerKiosk';
 import Login from './pages/Login';
+import MRPLedger from './pages/MRPLedger';
 
 function App() {
   return (
@@ -25,13 +26,14 @@ function App() {
               <ErrorBoundary>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
-            <Route path="/production-plan" element={<ProductionPlan />} />
-            <Route path="/inventory-levels" element={<InventoryLevels />} />
-            <Route path="/procurement" element={<ProcurementWaste />} />
-            <Route path="/engineering" element={<EngineeringBilling />} />
-            <Route path="/product-quality" element={<ProductQuality />} />
-            <Route path="/equipment" element={<EquipmentHealth />} />
-            <Route path="/reports" element={<ReportsAnalytics />} />
+                  <Route path="/production-plan" element={<ProductionPlan />} />
+                  <Route path="/inventory-levels" element={<InventoryLevels />} />
+                  <Route path="/procurement" element={<ProcurementWaste />} />
+                  <Route path="/engineering" element={<EngineeringBilling />} />
+                  <Route path="/mrp-ledger" element={<MRPLedger />} />
+                  <Route path="/product-quality" element={<ProductQuality />} />
+                  <Route path="/equipment" element={<EquipmentHealth />} />
+                  <Route path="/reports" element={<ReportsAnalytics />} />
                   <Route path="/diagnostics" element={<SystemDiagnostics />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

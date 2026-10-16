@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Avatar, Badge, Chip, Button, Tooltip } from '@mui/material';
-import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal, TouchApp, LocalShipping, Schema, Language as GlobeIcon, GitHub as GitHubIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
+import { Menu as MenuIcon, Dashboard as DashboardIcon, Assignment as AssignmentIcon, Inventory as InventoryIcon, HighQuality as QualityIcon, Assessment as ReportIcon, Notifications as NotificationsIcon, PrecisionManufacturing as LogoIcon, Terminal, TouchApp, LocalShipping, Schema, Language as GlobeIcon, GitHub as GitHubIcon, OpenInNew as OpenInNewIcon, Calculate as CalculateIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import TsukiFlowLogo from './TsukiFlowLogo';
 
@@ -9,10 +9,11 @@ const drawerWidth = 280;
 const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
   { text: 'Production Plan', icon: <AssignmentIcon />, path: '/production-plan' },
+  { text: 'MRP & Lot Ledger', icon: <CalculateIcon />, path: '/mrp-ledger' },
   { text: 'Inventory Levels', icon: <InventoryIcon />, path: '/inventory-levels' },
   { text: 'Procurement & Waste', icon: <LocalShipping />, path: '/procurement' },
-  { text: 'Product Quality', icon: <QualityIcon />, path: '/product-quality' },
   { text: 'Engineering & BoM', icon: <Schema />, path: '/engineering' },
+  { text: 'Product Quality', icon: <QualityIcon />, path: '/product-quality' },
   { text: 'IoT Equipment', icon: <LogoIcon />, path: '/equipment' },
   { text: 'Reports & Analytics', icon: <ReportIcon />, path: '/reports' },
   { text: 'YUZU Diagnostics', icon: <Terminal />, path: '/diagnostics' },

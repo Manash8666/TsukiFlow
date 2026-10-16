@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Text, Table, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Text, Table, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -164,3 +164,163 @@ class CustomWorkflow(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100))
     stages = Column(Text) 
+
+
+# ==============================================================================
+# THE EIGHT MISSING SYSTEMS - CORE SPINE & MRP MODELS
+# ==============================================================================
+
+class Warehouse(Base):
+    __tablename__ = "warehouses"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, index=True)
+    name = Column(String(100))
+    warehouse_type = Column(String(50))  # RAW_MATERIAL, WIP_FLOOR, FINISHED_GOODS, SUBCONTRACT_CUSTODY
+    location = Column(String(200))
+    is_active = Column(Boolean, default=True)
+
+
+class Lot(Base):
+    __tablename__ = "lots"
+    id = Column(Integer, primary_key=True, index=True)
+    lot_number = Column(String(100), unique=True, index=True)
+    parent_lot_id = Column(Integer, ForeignKey("lots.id"), nullable=True)
+    product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK), nullable=False)
+    sku_id = Column(Integer, ForeignKey("skus.id"), nullable=True)
+    lineage_type = Column(String(50), default="NEW")  # NEW (from GRN), SPLIT, DERIVED (from JWO)
+    initial_quantity = Column(Float, default=0.0)
+    current_quantity = Column(Float, default=0.0)
+    unit_cost = Column(Float, default=0.0)
+    status = Column(String(50), default="IN_STOCK")  # IN_STOCK, IN_PROCESS, EXHAUSTED, QUARANTINE
+    barcode = Column(String(100), unique=True, nullable=True)
+    created_at = Column(DateTime(timezone=True))
+
+    product = relationship("Product", foreign_keys=[product_id])
+    sku = relationship("SKU", foreign_keys=[sku_id])
+    parent_lot = relationship("Lot", remote_side=[id], backref="child_lots")
+
+
+class StageStock(Base):
+    __tablename__ = "stage_stocks"
+    id = Column(Integer, primary_key=True, index=True)
+    lot_id = Column(Integer, ForeignKey("lots.id"), nullable=False)
+    stage_name = Column(String(100), index=True)
+    warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
+    processor_name = Column(String(100))  # Captive Line 1 or Subcontractor Vendor (e.g. Mahesh Cutter)
+    quantity = Column(Float, default=0.0)
+    updated_at = Column(DateTime(timezone=True))
+
+    lot = relationship("Lot")
+    warehouse = relationship("Warehouse")
+
+
+class LotMovement(Base):
+    """
+    Immutable Double-Entry Ledger enforcing the Conservation Invariant:
+    issued_qty == consumed_qty + wastage_qty + surplus_qty
+    Surplus is NOT waste; it sits as a recoverable stock pool.
+    """
+    __tablename__ = "lot_movements"
+    id = Column(Integer, primary_key=True, index=True)
+    lot_id = Column(Integer, ForeignKey("lots.id"), nullable=False)
+    movement_type = Column(String(50), index=True)  # GRN_RECEIPT, JWO_ISSUE, JWO_COMPLETION, STAGE_TRANSFER, SURPLUS_RETURN
+    from_warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=True)
+    to_warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=True)
+    stage_name = Column(String(100), nullable=True)
+    issued_qty = Column(Float, default=0.0)
+    consumed_qty = Column(Float, default=0.0)
+    wastage_qty = Column(Float, default=0.0)
+    surplus_qty = Column(Float, default=0.0)
+    reference_doc = Column(String(100), index=True)  # PO-001, JWO-001, GRN-001
+    unit_cost = Column(Float, default=0.0)
+    timestamp = Column(DateTime(timezone=True))
+    notes = Column(Text, nullable=True)
+
+    lot = relationship("Lot")
+    from_warehouse = relationship("Warehouse", foreign_keys=[from_warehouse_id])
+    to_warehouse = relationship("Warehouse", foreign_keys=[to_warehouse_id])
+
+
+class RoutingBoM(Base):
+    __tablename__ = "routing_boms"
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK), nullable=False)
+    version = Column(String(50), default="v1.0")
+    description = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+
+    product = relationship("Product")
+    stages = relationship("RoutingBoMStage", back_populates="routing_bom", cascade="all, delete-orphan")
+
+
+class RoutingBoMStage(Base):
+    __tablename__ = "routing_bom_stages"
+    id = Column(Integer, primary_key=True, index=True)
+    routing_bom_id = Column(Integer, ForeignKey("routing_boms.id"), nullable=False)
+    stage_order = Column(Integer, default=1)
+    stage_name = Column(String(100), nullable=False)
+    default_processor_type = Column(String(50), default="CAPTIVE")  # CAPTIVE, SUBCONTRACT
+    default_vendor_name = Column(String(100), nullable=True)
+    standard_process_cost = Column(Float, default=0.0)
+    cycle_time_minutes = Column(Integer, default=0)
+
+    routing_bom = relationship("RoutingBoM", back_populates="stages")
+    items = relationship("RoutingBoMStageItem", back_populates="stage", cascade="all, delete-orphan")
+
+
+class RoutingBoMStageItem(Base):
+    __tablename__ = "routing_bom_stage_items"
+    id = Column(Integer, primary_key=True, index=True)
+    stage_id = Column(Integer, ForeignKey("routing_bom_stages.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK), nullable=False)
+    item_direction = Column(String(20), default="CONSUME")  # CONSUME or PRODUCE
+    quantity_per_unit = Column(Float, default=1.0)
+    uom = Column(String(20), default="units")
+
+    stage = relationship("RoutingBoMStage", back_populates="items")
+    product = relationship("Product")
+
+
+class JobWorkOrder(Base):
+    __tablename__ = "job_work_orders"
+    id = Column(Integer, primary_key=True, index=True)
+    jwo_number = Column(String(100), unique=True, index=True)
+    process_id = Column(Integer, ForeignKey("manufacturing_processes.id"), nullable=True)
+    stage_name = Column(String(100), nullable=False)
+    processor_type = Column(String(50), default="CAPTIVE")  # CAPTIVE, SUBCONTRACT
+    processor_name = Column(String(100), nullable=False)  # Line 1 or Vendor Name (e.g. Mahesh Cutter)
+    target_product_id = Column(Integer, ForeignKey(PRODUCT_ID_FK), nullable=True)
+    target_lot_id = Column(Integer, ForeignKey("lots.id"), nullable=True)
+    issued_lot_id = Column(Integer, ForeignKey("lots.id"), nullable=True)
+    issued_quantity = Column(Float, default=0.0)
+    consumed_quantity = Column(Float, default=0.0)
+    wastage_quantity = Column(Float, default=0.0)
+    surplus_quantity = Column(Float, default=0.0)
+    produced_quantity = Column(Float, default=0.0)
+    service_rate_per_unit = Column(Float, default=0.0)
+    total_service_cost = Column(Float, default=0.0)
+    status = Column(String(50), default="PENDING")  # PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+    is_billed = Column(Boolean, default=False)
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True))
+
+    target_product = relationship("Product", foreign_keys=[target_product_id])
+    target_lot = relationship("Lot", foreign_keys=[target_lot_id])
+    issued_lot = relationship("Lot", foreign_keys=[issued_lot_id])
+
+
+class ProcessorBill(Base):
+    __tablename__ = "processor_bills"
+    id = Column(Integer, primary_key=True, index=True)
+    bill_number = Column(String(100), unique=True, index=True)
+    jwo_id = Column(Integer, ForeignKey("job_work_orders.id"), nullable=True)
+    processor_name = Column(String(100), nullable=False)
+    bill_type = Column(String(50), default="SERVICE_BILL")  # SERVICE_BILL (JRN), GOODS_BILL (PO)
+    gross_amount = Column(Float, default=0.0)
+    tax_amount = Column(Float, default=0.0)
+    net_amount = Column(Float, default=0.0)
+    paid_amount = Column(Float, default=0.0)
+    due_amount = Column(Float, default=0.0)
+    status = Column(String(50), default="UNPAID")  # UNPAID, PARTIALLY_PAID, PAID
+    created_at = Column(DateTime(timezone=True))
+
